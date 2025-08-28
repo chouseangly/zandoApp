@@ -1,4 +1,4 @@
-"use client"; // Add this directive for hooks
+"use client";
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -18,27 +18,32 @@ const AuthNavbar = () => {
     getCategories();
   }, []);
 
+  // FIX: Function to close the menu
+  const handleCloseMenu = () => {
+    setHoveredCategory(null);
+  };
+
   return (
-    <div className="w-full sticky top-0 z-[200] bg-white shadow-sm" onMouseLeave={() => setHoveredCategory(null)}>
-      <div className="px-4 sm:px-6 lg:px-10 py-3 border-b border-gray-100">
-        <div className="flex items-center justify-between">
+    <div
+      className="w-full sticky top-0 z-50 bg-white shadow-sm isolate"
+      onMouseLeave={() => setHoveredCategory(null)}
+    >
+      <div className="relative px-4 sm:px-6 lg:px-10">
+        <div className="flex items-center justify-between py-3 border-b border-gray-100">
           {/* Left: Categories */}
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-10">
             {categories.map((cat) => (
               <div
                 key={cat.id}
-                className="relative"
                 onMouseEnter={() => setHoveredCategory(cat)}
+                className="py-4"
               >
                 <Link
                   href="/"
-                  className="text-lg lg:text-lg font-bold text-gray-800 transition-colors py-4"
+                  className="text-lg lg:text-lg font-bold text-gray-800 transition-colors"
                 >
                   {cat.name}
                 </Link>
-                {hoveredCategory && hoveredCategory.id === cat.id && (
-                  <MegaMenu category={cat} />
-                )}
               </div>
             ))}
           </nav>
@@ -88,6 +93,9 @@ const AuthNavbar = () => {
           </div>
         </div>
       </div>
+      
+      {/* FIX: Pass the handleCloseMenu function to MegaMenu */}
+      {hoveredCategory && <MegaMenu category={hoveredCategory} onClose={handleCloseMenu} />}
     </div>
   );
 }

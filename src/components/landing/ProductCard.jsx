@@ -14,22 +14,25 @@ const HeartIcon = () => (
 );
 
 const ProductCard = ({ product }) => {
+  // FIX: Use the first image from the first variant in the gallery as the display image.
+  // This provides a fallback if the gallery or images are missing.
+  const imageUrl = product.gallery?.[0]?.images?.[0] || "https://placehold.co/400x500/cccccc/ffffff?text=No+Image";
+
   return (
     <Link href={`/product/${product.id}`} passHref>
       <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 group cursor-pointer">
         <div className="relative">
          <img
-            src={product.imageUrl}
+            src={imageUrl}
             alt={product.name}
             width={400}
             height={500}
             className="w-full h-auto object-cover aspect-[4/5]"
-            // This onError handler requires the component to be a Client Component
             onError={(e) => {
                 e.currentTarget.src = "https://placehold.co/400x500/cccccc/ffffff?text=Error";
             }}
           />
-          {product.discount && (
+          {product.discount > 0 && (
             <div className="absolute top-0 left-0 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-br-lg">
               -{product.discount}%
             </div>
@@ -38,7 +41,6 @@ const ProductCard = ({ product }) => {
         <div className="p-3 md:p-4">
           <div className="flex justify-between items-start">
             <h3 className="font-semibold text-gray-700 text-sm md:text-base mb-1 pr-2">{product.name}</h3>
-            {/* This onClick handler also requires a Client Component */}
             <button 
               onClick={(e) => {
                 e.preventDefault(); // Prevents link navigation
@@ -50,6 +52,7 @@ const ProductCard = ({ product }) => {
             </button>
           </div>
           <div className="flex items-baseline">
+            {/* FIX: Use the 'price' and 'originalPrice' fields from the backend response */}
             <p className="font-bold text-gray-800 text-sm md:text-base">${product.price.toFixed(2)}</p>
             {product.originalPrice && (
               <p className="text-xs text-gray-500 line-through ml-2">${product.originalPrice.toFixed(2)}</p>

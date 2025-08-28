@@ -6,7 +6,7 @@ const MainLayout = ({children}) => {
   return (
     <>
         <AuthNavbar />
-        <main className="pt-[2px] md:pt-[7px] lg:pt-0"> 
+       <main className="pt-[2px] md:pt-[7px] lg:pt-0"> 
           {children}
         </main>
         <Footer />
