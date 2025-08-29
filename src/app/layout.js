@@ -1,6 +1,8 @@
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import SessionWrapper from "@/components/SessionWrapper"; // ✅ IMPORT
+import SessionWrapper from "@/components/SessionWrapper";
+import { LanguageProvider } from "@/context/LanguageContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -8,7 +10,6 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-// ✅ You can now export metadata again
 export const metadata = {
   title: "Zando E-Commerce",
   description: "Your one-stop shop for modern fashion.",
@@ -21,9 +22,12 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning
         className={`${poppins.variable} antialiased`}
       >
-        {/* ✅ WRAP with your new SessionWrapper */}
         <SessionWrapper>
-          {children}
+          <ThemeProvider>
+            <LanguageProvider>
+              {children}
+            </LanguageProvider>
+          </ThemeProvider>
         </SessionWrapper>
       </body>
     </html>

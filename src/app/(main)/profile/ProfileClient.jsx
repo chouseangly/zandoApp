@@ -4,10 +4,9 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext"; // ✅ IMPORT
-import { useTheme } from "@/context/ThemeContext"; // ✅ IMPORT
+import { useLanguage } from "@/context/LanguageContext";
+import { useTheme } from "@/context/ThemeContext";
 
-// Simple dictionary for translations
 const translations = {
   en: {
     profile: "Profile",
@@ -83,11 +82,18 @@ const ProfileClient = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
-  const { language, setLanguage } = useLanguage(); // ✅ GET language context
-  const { theme, toggleTheme } = useTheme(); // ✅ GET theme context
-  const t = translations[language]; // ✅ GET current translation
+  const { language, setLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+  const t = translations[language];
 
-  const [formData, setFormData] = useState({ /* ... */ });
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    mobileNumber: '',
+    dob: '',
+    gender: ''
+  });
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");
@@ -103,81 +109,67 @@ const ProfileClient = () => {
     }
   }, [status, session, router]);
 
-  const handleInputChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const handleUpdateProfile = (e) => {
-    e.preventDefault();
-  };
+  const handleInputChange = (e) => setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleUpdateProfile = (e) => e.preventDefault();
   
-  if (status === "loading" || !session) {
-    return <div className="text-center py-20">Loading...</div>;
-  }
+  if (status === "loading" || !session) return <div className="text-center py-20">Loading...</div>;
   
   const SidebarLink = ({ name, tabName }) => (
-    <button 
-      onClick={() => setActiveTab(tabName)}
-      className={`w-full text-left px-4 py-2 rounded-md flex justify-between items-center ${activeTab === tabName ? 'bg-gray-100 dark:bg-gray-700 font-semibold' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
-    >
-      {name}
-      <ChevronRight size={16} className="text-gray-400" />
+    <button onClick={() => setActiveTab(tabName)} className={`w-full text-left px-4 py-2 rounded-md flex justify-between items-center ${activeTab === tabName ? 'bg-gray-100 dark:bg-gray-700 font-semibold' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+      {name} <ChevronRight size={16} className="text-gray-400" />
     </button>
   );
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="flex flex-col md:flex-row gap-10 lg:gap-16">
-        
         <aside className="w-full md:w-1/4 lg:w-1/5">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-bold text-lg mb-2">{t.loyaltyMember}</h3>
-              <SidebarLink name={t.membershipBenefits} tabName="membership" />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-2">{t.me}</h3>
-              <SidebarLink name={t.profile} tabName="profile" />
-              <SidebarLink name={t.myOrders} tabName="orders" />
-              <SidebarLink name={t.giftCard} tabName="giftcard" />
-              <SidebarLink name={t.addressBook} tabName="address" />
-              <SidebarLink name={t.changePassword} tabName="password" />
-            </div>
-            <div>
-              <h3 className="font-bold text-lg mb-2">{t.languages}</h3>
-              <div className="pl-4 space-y-2">
-                <label className="flex items-center cursor-pointer">
-                  <input type="radio" name="language" value="en" checked={language === 'en'} onChange={() => setLanguage('en')} className="h-4 w-4 text-black border-gray-300 focus:ring-black"/>
-                  <span className="ml-2">{t.english}</span>
-                </label>
-                <label className="flex items-center cursor-pointer">
-                  <input type="radio" name="language" value="km" checked={language === 'km'} onChange={() => setLanguage('km')} className="h-4 w-4 text-black border-gray-300 focus:ring-black"/>
-                  <span className="ml-2">{t.khmer}</span>
-                </label>
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-bold text-lg mb-2">{t.loyaltyMember}</h3>
+                <SidebarLink name={t.membershipBenefits} tabName="membership" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg mb-2">{t.me}</h3>
+                <SidebarLink name={t.profile} tabName="profile" />
+                <SidebarLink name={t.myOrders} tabName="orders" />
+                <SidebarLink name={t.giftCard} tabName="giftcard" />
+                <SidebarLink name={t.addressBook} tabName="address" />
+                <SidebarLink name={t.changePassword} tabName="password" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg mb-2">{t.languages}</h3>
+                <div className="pl-4 space-y-2">
+                  <label className="flex items-center cursor-pointer">
+                    <input type="radio" name="language" value="en" checked={language === 'en'} onChange={() => setLanguage('en')} className="h-4 w-4 text-black border-gray-300 focus:ring-black"/>
+                    <span className="ml-2">{t.english}</span>
+                  </label>
+                  <label className="flex items-center cursor-pointer">
+                    <input type="radio" name="language" value="km" checked={language === 'km'} onChange={() => setLanguage('km')} className="h-4 w-4 text-black border-gray-300 focus:ring-black"/>
+                    <span className="ml-2">{t.khmer}</span>
+                  </label>
+                </div>
+              </div>
+               <div>
+                <h3 className="font-bold text-lg mb-2">{t.settings}</h3>
+                <div className="pl-4 flex items-center justify-between">
+                  <span>{t.darkMode}</span>
+                  <button onClick={toggleTheme} className={`w-12 h-6 rounded-full p-1 flex items-center transition-colors ${theme === 'dark' ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}>
+                    <span className="w-4 h-4 bg-white rounded-full shadow-md"></span>
+                  </button>
+                </div>
+              </div>
+              <div className="pt-4">
+                  <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full text-center px-4 py-3 rounded-md bg-black text-white font-semibold hover:bg-gray-800 dark:hover:bg-gray-700">{t.logOut}</button>
               </div>
             </div>
-            <div>
-              <h3 className="font-bold text-lg mb-2">{t.settings}</h3>
-              <div className="pl-4 flex items-center justify-between">
-                <span>{t.darkMode}</span>
-                <button onClick={toggleTheme} className={`w-12 h-6 rounded-full p-1 flex items-center transition-colors ${theme === 'dark' ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}>
-                  <span className="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform"></span>
-                </button>
-              </div>
-            </div>
-            <div className="pt-4">
-                <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full text-center px-4 py-3 rounded-md bg-black text-white font-semibold hover:bg-gray-800 dark:hover:bg-gray-700">
-                  {t.logOut}
-                </button>
-            </div>
-          </div>
         </aside>
 
         <main className="w-full md:w-3/4 lg:w-4/5">
           {activeTab === 'profile' && (
             <div>
               <h2 className="text-2xl font-bold mb-6">{t.profile}</h2>
-              <form onSubmit={handleUpdateProfile} className="space-y-6 max-w-2xl bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+              <form onSubmit={handleUpdateProfile} className="space-y-6 max-w-2xl bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow">
                  <div>
                     <label className="block text-sm font-medium mb-2">{t.gender}</label>
                     <div className="flex items-center gap-6">
@@ -213,7 +205,6 @@ const ProfileClient = () => {
             </div>
           )}
         </main>
-
       </div>
     </div>
   );
