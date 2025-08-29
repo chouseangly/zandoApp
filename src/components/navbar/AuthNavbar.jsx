@@ -2,13 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Bell, Heart, ShoppingBag } from "lucide-react";
+import { Search, Bell, Heart, ShoppingBag, User, LogOut } from "lucide-react";
+import { useSession, signIn, signOut } from "next-auth/react"; // MODIFIED: Import NextAuth hooks
 import { fetchCategories } from '@/services/category.service';
 import MegaMenu from './MegaMenu';
 
 const AuthNavbar = () => {
   const [categories, setCategories] = useState([]);
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  const { data: session, status } = useSession(); // MODIFIED: Get session data and status
 
   useEffect(() => {
     const getCategories = async () => {
@@ -18,7 +20,6 @@ const AuthNavbar = () => {
     getCategories();
   }, []);
 
-  // FIX: Function to close the menu
   const handleCloseMenu = () => {
     setHoveredCategory(null);
   };
@@ -84,17 +85,32 @@ const AuthNavbar = () => {
                 </span>
               </div>
             </div>
-
-            {/* Auth Links */}
+            
+            {/* MODIFIED: Conditional Auth Links */}
             <div className="hidden sm:flex items-center space-x-5 font-bold">
-              <Link href="/login" className="text-gray-800 hover:text-black">LOGIN</Link>
-              <Link href="/register" className="text-gray-800 hover:text-black">REGISTER</Link>
+              {status === "authenticated" ? (
+                // If user is logged in, show Profile and Logout
+                <>
+                  <Link href="/profile" className="flex items-center gap-2 text-gray-800 hover:text-black">
+                     <User className="h-5 w-5" />
+                     {session.user.name || 'Profile'}
+                  </Link>
+                  <button onClick={() => signOut()} className="flex items-center gap-2 text-gray-800 hover:text-black">
+                     <LogOut className="h-5 w-5" />
+                  </button>
+                </>
+              ) : (
+                // If user is not logged in, show Login and Register
+                <>
+                  <Link href="/login" className="text-gray-800 hover:text-black">LOGIN</Link>
+                  <Link href="/register" className="text-gray-800 hover:text-black">REGISTER</Link>
+                </>
+              )}
             </div>
           </div>
         </div>
       </div>
       
-      {/* FIX: Pass the handleCloseMenu function to MegaMenu */}
       {hoveredCategory && <MegaMenu category={hoveredCategory} onClose={handleCloseMenu} />}
     </div>
   );

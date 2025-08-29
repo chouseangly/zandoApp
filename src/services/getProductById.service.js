@@ -1,8 +1,8 @@
 // This function fetches a single product by its ID from your backend API
 export const fetchProductById = async (productId) => {
   try {
-    // The backend endpoint for getting a single product is /api/products/{id}
-    const response = await fetch(`http://localhost:8080/api/products/${productId}`);
+    // ✅ FIX: Corrected the endpoint URL to match the backend controller
+    const response = await fetch(`http://localhost:8080/api/v1/products/${productId}`);
 
     if (!response.ok) {
       throw new Error('Network response was not ok');
@@ -21,7 +21,7 @@ export const fetchProductById = async (productId) => {
 // This function fetches all products from your backend API
 export const fetchAllProducts = async () => {
   try {
-    const response = await fetch('http://localhost:8080/api/products');
+    const response = await fetch('http://localhost:8080/api/v1/products');
 
     if (!response.ok) {
       throw new Error('Network response was not ok');
