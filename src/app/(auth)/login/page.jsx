@@ -57,17 +57,9 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(data.message || "Login failed. Please check your credentials.");
       }
-
-      // Store custom token and user info from your backend
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("userId", data.userId);
-      localStorage.setItem("email", data.email);
-      localStorage.setItem("role", data.role);
-      localStorage.setItem("firstName", data.firstName);
-      localStorage.setItem("lastName", data.lastName);
-
+      
       toast.success("Login successful!", { id: toastId });
-      window.dispatchEvent(new Event("storage")); // Notify navbar to update
+      window.dispatchEvent(new Event("storage")); 
       router.push("/");
     } catch (err) {
       toast.error(err.message || "Something went wrong.", { id: toastId });
@@ -81,15 +73,8 @@ export default function LoginPage() {
     signIn("google", { callbackUrl: "/" });
   };
   
-  // This effect handles the session after Google sign-in
   useEffect(() => {
     if (status === "authenticated" && session?.accessToken) {
-        localStorage.setItem("token", session.accessToken);
-        localStorage.setItem("userId", session.userId);
-        localStorage.setItem("email", session.user.email);
-        localStorage.setItem("role", session.role);
-        localStorage.setItem("firstName", session.firstName);
-        localStorage.setItem("lastName", session.lastName);
         window.dispatchEvent(new Event("storage"));
         router.push("/");
     }
@@ -101,7 +86,6 @@ export default function LoginPage() {
         <Toaster position="bottom-right" />
       <div className="w-full max-w-4xl bg-white shadow-xl rounded-lg flex overflow-hidden">
         
-        {/* Left Side: Form */}
         <div className="w-full lg:w-1/2 p-8 md:p-12">
             <div className="flex justify-center mb-6">
                 <Link href="/">
@@ -173,8 +157,7 @@ export default function LoginPage() {
             </Link>
           </p>
         </div>
-
-        {/* Right Side: Image */}
+        
         <div className="hidden lg:block w-1/2 relative">
           <Image src="/ban2.jpg" alt="Fashion model" layout="fill" objectFit="cover" />
         </div>

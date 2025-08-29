@@ -2,15 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Bell, Heart, ShoppingBag, User, LogOut } from "lucide-react";
-import { useSession, signIn, signOut } from "next-auth/react"; // MODIFIED: Import NextAuth hooks
+import { Search, Bell, Heart, ShoppingBag, User, LogOut, LayoutDashboard } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 import { fetchCategories } from '@/services/category.service';
 import MegaMenu from './MegaMenu';
 
 const AuthNavbar = () => {
   const [categories, setCategories] = useState([]);
   const [hoveredCategory, setHoveredCategory] = useState(null);
-  const { data: session, status } = useSession(); // MODIFIED: Get session data and status
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const getCategories = async () => {
@@ -31,7 +31,6 @@ const AuthNavbar = () => {
     >
       <div className="relative px-4 sm:px-6 lg:px-10">
         <div className="flex items-center justify-between py-3 border-b border-gray-100">
-          {/* Left: Categories */}
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-10">
             {categories.map((cat) => (
               <div
@@ -49,7 +48,6 @@ const AuthNavbar = () => {
             ))}
           </nav>
 
-          {/* Center: Logo */}
           <div className="flex-shrink-0 md:absolute md:left-1/2 md:-translate-x-1/2">
             <Link href="/" className="flex items-center">
               <Image
@@ -62,9 +60,7 @@ const AuthNavbar = () => {
             </Link>
           </div>
 
-          {/* Right: Search + Icons + Auth */}
           <div className="flex items-center space-x-10">
-            {/* Search */}
             <div className="hidden sm:flex items-center w-[120px] md:w-[100px] lg:w-[130px] border border-gray-300 rounded-md px-2 py-1">
               <Search className="h-4 w-4 text-gray-500" />
               <input
@@ -74,7 +70,6 @@ const AuthNavbar = () => {
               />
             </div>
 
-            {/* Icons */}
             <div className="flex items-center space-x-5">
               <Bell className="h-5 w-5 text-gray-600 hover:text-black cursor-pointer" />
               <Heart className="h-5 w-5 text-gray-600 hover:text-black cursor-pointer" />
@@ -86,11 +81,15 @@ const AuthNavbar = () => {
               </div>
             </div>
             
-            {/* MODIFIED: Conditional Auth Links */}
             <div className="hidden sm:flex items-center space-x-5 font-bold">
               {status === "authenticated" ? (
-                // If user is logged in, show Profile and Logout
                 <>
+                  {session.user.role === 'ADMIN' && (
+                      <Link href="/admin/dashboard" className="flex items-center gap-2 text-gray-800 hover:text-black">
+                         <LayoutDashboard className="h-5 w-5" />
+                         Dashboard
+                      </Link>
+                  )}
                   <Link href="/profile" className="flex items-center gap-2 text-gray-800 hover:text-black">
                      <User className="h-5 w-5" />
                      {session.user.name || 'Profile'}
@@ -100,7 +99,6 @@ const AuthNavbar = () => {
                   </button>
                 </>
               ) : (
-                // If user is not logged in, show Login and Register
                 <>
                   <Link href="/login" className="text-gray-800 hover:text-black">LOGIN</Link>
                   <Link href="/register" className="text-gray-800 hover:text-black">REGISTER</Link>
