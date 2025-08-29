@@ -1,16 +1,30 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Bell, Heart, ShoppingBag, User, LogOut, LayoutDashboard } from "lucide-react";
-import { useSession, signOut } from "next-auth/react";
+import { Search, Bell, Heart, ShoppingBag, User } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { fetchCategories } from '@/services/category.service';
 import MegaMenu from './MegaMenu';
+import ProfileMenu from './ProfileMenu'; // ✅ IMPORT the new component
 
 const AuthNavbar = () => {
   const [categories, setCategories] = useState([]);
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [isProfileMenuOpen, setProfileMenuOpen] = useState(false); // ✅ ADD state for profile menu
   const { data: session, status } = useSession();
+  const profileMenuRef = useRef(null);
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const getCategories = async () => {
@@ -31,6 +45,7 @@ const AuthNavbar = () => {
     >
       <div className="relative px-4 sm:px-6 lg:px-10">
         <div className="flex items-center justify-between py-3 border-b border-gray-100">
+          {/* Left: Categories */}
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-10">
             {categories.map((cat) => (
               <div
@@ -48,6 +63,7 @@ const AuthNavbar = () => {
             ))}
           </nav>
 
+          {/* Center: Logo */}
           <div className="flex-shrink-0 md:absolute md:left-1/2 md:-translate-x-1/2">
             <Link href="/" className="flex items-center">
               <Image
@@ -60,6 +76,7 @@ const AuthNavbar = () => {
             </Link>
           </div>
 
+          {/* Right: Search + Icons + Auth */}
           <div className="flex items-center space-x-10">
             <div className="hidden sm:flex items-center w-[120px] md:w-[100px] lg:w-[130px] border border-gray-300 rounded-md px-2 py-1">
               <Search className="h-4 w-4 text-gray-500" />
@@ -83,21 +100,17 @@ const AuthNavbar = () => {
             
             <div className="hidden sm:flex items-center space-x-5 font-bold">
               {status === "authenticated" ? (
-                <>
-                  {session.user.role === 'ADMIN' && (
-                      <Link href="/admin/dashboard" className="flex items-center gap-2 text-gray-800 hover:text-black">
-                         <LayoutDashboard className="h-5 w-5" />
-                         Dashboard
-                      </Link>
-                  )}
-                  <Link href="/profile" className="flex items-center gap-2 text-gray-800 hover:text-black">
+                // ✅ MODIFIED: Use a relative container for the profile menu
+                <div className="relative" ref={profileMenuRef}>
+                  <button 
+                    onClick={() => setProfileMenuOpen(prev => !prev)} 
+                    className="flex items-center gap-2 text-gray-800 hover:text-black"
+                  >
                      <User className="h-5 w-5" />
                      {session.user.name || 'Profile'}
-                  </Link>
-                  <button onClick={() => signOut()} className="flex items-center gap-2 text-gray-800 hover:text-black">
-                     <LogOut className="h-5 w-5" />
                   </button>
-                </>
+                  {isProfileMenuOpen && <ProfileMenu onClose={() => setProfileMenuOpen(false)} />}
+                </div>
               ) : (
                 <>
                   <Link href="/login" className="text-gray-800 hover:text-black">LOGIN</Link>

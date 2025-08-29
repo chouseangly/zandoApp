@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+// ... imports
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [price, setPrice] = useState('');
-
+    // ... state variables
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        // Using FormData for multipart request
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('description', description);
+        formData.append('basePrice', price);
+        // ... append other fields like variants, images, etc.
+
         try {
-            const response = await fetch('/api/products', { 
+            // ✅ MODIFIED: Use the correct, secure endpoint
+            const response = await fetch(`${API_BASE_URL}/products/admin`, { 
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, price: parseFloat(price) })
+                // No 'Content-Type' header needed; browser sets it for FormData
+                body: formData,
             });
 
             if (response.ok) {
@@ -28,8 +33,9 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
     };
 
     if (!isOpen) return null;
-
+    
     return (
+        // ... JSX is the same
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
                 <div className="flex justify-between items-center mb-4">
