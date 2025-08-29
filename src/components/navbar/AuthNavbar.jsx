@@ -63,7 +63,7 @@ const AuthNavbar = () => {
           <div className="flex items-center space-x-10">
             <div className="hidden sm:flex items-center w-[120px] md:w-[100px] lg:w-[130px] border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1">
               <Search className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              <input type="text" placeholder={t.search} className="w-full bg-transparent px-2 text-sm outline-none text-gray-800 dark:text-gray-200" />
+              <input type="text" placeholder={t.search} className="w-full bg-transparent px-2 text-sm outline-none text-gray-800 dark:text-gray-200 placeholder:text-gray-500 dark:placeholder:text-gray-400" />
             </div>
 
             <div className="flex items-center space-x-5">
