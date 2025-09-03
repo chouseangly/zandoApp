@@ -1,27 +1,117 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Plus, Trash2, UploadCloud } from 'lucide-react';
+import { fetchCategories } from '@/services/category.service';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [price, setPrice] = useState('');
+    const [formData, setFormData] = useState({
+        name: '',
+        description: '',
+        basePrice: '',
+        discountPercent: 0,
+        isAvailable: true,
+        categoryIds: [],
+        variants: []
+    });
+    const [allCategories, setAllCategories] = useState([]);
+
+    useEffect(() => {
+        const loadCategories = async () => {
+            const categories = await fetchCategories();
+            setAllCategories(categories);
+        };
+        if (isOpen) {
+            loadCategories();
+        }
+    }, [isOpen]);
 
     useEffect(() => {
         if (product) {
-            setName(product.name);
-            setDescription(product.description);
-            setPrice(product.price.toString());
+            setFormData({
+                name: product.name || '',
+                description: product.description || '',
+                basePrice: product.originalPrice || '',
+                discountPercent: product.discount || 0,
+                isAvailable: product.isAvailable,
+                categoryIds: product.categories.map(c => c.id),
+                variants: product.gallery.map(g => ({...g, imageCount: g.images.length, files: [], previews: g.images})) || []
+            });
         }
     }, [product]);
+
+    const handleInputChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    };
+    
+     const handleCategoryChange = (categoryId) => {
+        setFormData(prev => {
+            const newCategoryIds = prev.categoryIds.includes(categoryId)
+                ? prev.categoryIds.filter(id => id !== categoryId)
+                : [...prev.categoryIds, categoryId];
+            return { ...prev, categoryIds: newCategoryIds };
+        });
+    };
+
+    const handleVariantChange = (index, field, value) => {
+        const newVariants = [...formData.variants];
+        newVariants[index][field] = value;
+        setFormData(prev => ({ ...prev, variants: newVariants }));
+    };
+    
+    const handleFileChange = (index, e) => {
+        const files = Array.from(e.target.files).slice(0, 6); // Limit to 6 files
+        const newVariants = [...formData.variants];
+        newVariants[index].files = files;
+        newVariants[index].imageCount = files.length;
+        newVariants[index].previews = files.map(file => URL.createObjectURL(file));
+        setFormData(prev => ({ ...prev, variants: newVariants }));
+    };
+
+    const addVariant = () => {
+        setFormData(prev => ({
+            ...prev,
+            variants: [...prev.variants, { color: '', sizes: [], imageCount: 0, files: [], previews: [] }]
+        }));
+    };
+
+    const removeVariant = (index) => {
+        const newVariants = formData.variants.filter((_, i) => i !== index);
+        setFormData(prev => ({ ...prev, variants: newVariants }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         
+        const formPayload = new FormData();
+
+        if (formData.name !== product.name) formPayload.append('name', formData.name);
+        if (formData.description !== product.description) formPayload.append('description', formData.description);
+        if (formData.basePrice.toString() !== product.originalPrice.toString()) formPayload.append('basePrice', formData.basePrice);
+        if (formData.discountPercent !== product.discount) formPayload.append('discountPercent', formData.discountPercent);
+        if (formData.isAvailable !== product.isAvailable) formPayload.append('isAvailable', formData.isAvailable);
+        
+        const variantsForApi = formData.variants.map(v => ({
+            color: v.color,
+            sizes: Array.isArray(v.sizes) ? v.sizes : v.sizes.split(',').map(s => s.trim()),
+            imageCount: v.imageCount
+        }));
+        
+        formPayload.append('variants', JSON.stringify(variantsForApi));
+        formData.categoryIds.forEach(id => formPayload.append('categoryIds', id));
+        formData.variants.forEach(variant => {
+            if(variant.files) {
+               variant.files.forEach(file => {
+                    formPayload.append('images', file);
+                });
+            }
+        });
+
         try {
-            const response = await fetch(`/api/products/${product.id}`, {
+            const response = await fetch(`${API_BASE_URL}/products/admin/${product.id}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, description, price: parseFloat(price) })
+                body: formPayload
             });
 
             if (response.ok) {
@@ -34,31 +124,102 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
             console.error("Error updating product:", error);
         }
     };
-
+    
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-4xl">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Edit Product</h2>
                     <button onClick={onClose}><X size={24} /></button>
                 </div>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
-                        <label className="block text-gray-700">Name</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 border rounded-md" required />
+                <form onSubmit={handleSubmit} className="space-y-4 max-h-[85vh] overflow-y-auto pr-4">
+                    {/* Basic Info */}
+                    <input name="name" value={formData.name} onChange={handleInputChange} placeholder="Product Name" className="w-full p-2 border rounded" />
+                    <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full p-2 border rounded" />
+                    <div className="grid grid-cols-2 gap-4">
+                        <input name="basePrice" type="number" value={formData.basePrice} onChange={handleInputChange} placeholder="Price" className="w-full p-2 border rounded" />
+                        <input name="discountPercent" type="number" value={formData.discountPercent} onChange={handleInputChange} placeholder="Discount %" className="w-full p-2 border rounded" />
                     </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700">Description</label>
-                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-3 py-2 border rounded-md" required />
+                     {/* Status Toggle */}
+                    <div className="flex items-center gap-4">
+                        <label className="font-medium">Status:</label>
+                        <span className={`${!formData.isAvailable ? 'text-red-500' : 'text-gray-400'}`}>Out of Stock</span>
+                        <button type="button" onClick={() => setFormData(p => ({...p, isAvailable: !p.isAvailable}))} className={`relative inline-flex h-6 w-11 items-center rounded-full ${formData.isAvailable ? 'bg-green-500' : 'bg-gray-300'}`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${formData.isAvailable ? 'translate-x-6' : 'translate-x-1'}`} />
+                        </button>
+                        <span className={`${formData.isAvailable ? 'text-green-500' : 'text-gray-400'}`}>Available</span>
                     </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700">Price</label>
-                        <input type="number" step="0.01" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full px-3 py-2 border rounded-md" required />
+
+                    {/* Categories */}
+                    <div>
+                        <label className="block font-medium mb-2">Categories</label>
+                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border p-4 rounded-md max-h-60 overflow-y-auto">
+                            {allCategories.map(mainCat => (
+                                <div key={mainCat.id}>
+                                    <h4 className="font-bold text-lg text-gray-800 mb-3">{mainCat.name}</h4>
+                                    {mainCat.children.map(subCat => (
+                                        <div key={subCat.id} className="mb-3">
+                                            <h5 className="font-semibold text-red-600 uppercase text-sm tracking-wider mb-2">{subCat.name}</h5>
+                                            <div className="space-y-2 pl-2">
+                                                {subCat.children.map(childCat => (
+                                                    <label key={childCat.id} className="flex items-center text-sm">
+                                                        <input
+                                                            type="checkbox"
+                                                            value={childCat.id}
+                                                            checked={formData.categoryIds.includes(childCat.id)}
+                                                            onChange={() => handleCategoryChange(childCat.id)}
+                                                            className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
+                                                        />
+                                                        <span className="ml-2 text-gray-600">{childCat.name}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                    <div className="flex justify-end">
-                        <button type="button" onClick={onClose} className="mr-2 px-4 py-2 bg-gray-300 rounded-md">Cancel</button>
+
+                    {/* Variants */}
+                    <div>
+                        <div className="flex justify-between items-center mt-4 mb-2">
+                             <h3 className="font-bold">Variants</h3>
+                             <button type="button" onClick={addVariant} className="flex items-center gap-1 text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                                <Plus size={16} /> Add Variant
+                            </button>
+                        </div>
+                        {formData.variants.map((variant, index) => (
+                            <div key={index} className="p-3 border rounded mb-2 bg-gray-50 relative">
+                                <button type="button" onClick={() => removeVariant(index)} className="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                                    <Trash2 size={18} />
+                                </button>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <input value={variant.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} placeholder="Color (e.g., Blue)" className="w-full p-2 border rounded mb-2" />
+                                        <input value={Array.isArray(variant.sizes) ? variant.sizes.join(',') : variant.sizes} onChange={e => handleVariantChange(index, 'sizes', e.target.value)} placeholder="Sizes (comma-separated, e.g., S,M,L)" className="w-full p-2 border rounded mb-2" />
+                                    </div>
+                                    <div>
+                                        <label className="w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-100">
+                                            <UploadCloud size={24} className="text-gray-400" />
+                                            <span className="text-sm text-gray-500 mt-2">Upload up to 6 images</span>
+                                            <input type="file" multiple accept="image/*" onChange={e => handleFileChange(index, e)} className="hidden" />
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-2">
+                                    {variant.previews.map((preview, i) => (
+                                        <img key={i} src={preview} alt="preview" className="w-full h-20 object-cover rounded" />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-4">
+                        <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
                         <button type="submit" className="px-4 py-2 bg-black text-white rounded-md">Save Changes</button>
                     </div>
                 </form>

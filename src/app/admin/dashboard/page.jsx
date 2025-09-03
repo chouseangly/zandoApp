@@ -1,39 +1,79 @@
-import React from 'react';
-import ProductClient from './ProductClient'; // Assuming ProductClient is in the same folder
-import { Home, BarChart2, ShoppingBag, Users, Settings, LogOut, Search, Bell, DollarSign, ListOrdered, UserCheck } from 'lucide-react';
+"use client";
 
-// --- LAYOUT COMPONENTS for the Dashboard Page ---
+import React, { useState, useEffect } from 'react';
+import ProductClient from './ProductClient'; 
+import { Home, BarChart2, ShoppingBag, Users, Settings, LogOut, Search, Calendar, Bell, DollarSign, ListOrdered, UserCheck, ChevronDown, FileText } from 'lucide-react';
+import { fetchCategories } from '@/services/category.service';
+import { fetchDashboardStats } from '@/services/dashboard.service';
 
-const Sidebar = () => (
-    <div className="w-64 bg-gray-900 text-gray-300 flex-col min-h-screen hidden lg:flex">
-        <div className="p-6 text-center border-b border-gray-700">
-            <h1 className="text-2xl font-bold text-white">Backing</h1>
-        </div>
-        <nav className="flex-1 px-4 py-6 space-y-2">
-            <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white">
-                <Home size={20} className="mr-3" /> Home
-            </a>
-            <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white">
-                <BarChart2 size={20} className="mr-3" /> Sales
-            </a>
-            <a href="#" className="flex items-center px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold">
-                <ShoppingBag size={20} className="mr-3" /> Products
-            </a>
-             <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white">
-                <Users size={20} className="mr-3" /> Customers
-            </a>
-        </nav>
-        <div className="px-4 py-6 border-t border-gray-700 space-y-2">
-            <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white">
-                <Settings size={20} className="mr-3" /> Settings
-            </a>
-            <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white">
-                <LogOut size={20} className="mr-3" /> Log Out
-            </a>
-        </div>
-    </div>
-);
+// --- Sidebar Component ---
+const Sidebar = () => {
+    const [categories, setCategories] = useState([]);
+    const [isProductsOpen, setIsProductsOpen] = useState(true);
 
+    useEffect(() => {
+        const getCategories = async () => {
+            const fetchedCategories = await fetchCategories();
+             const subCategories = fetchedCategories.flatMap(cat => cat.children || [])
+              .map(subCat => ({ ...subCat, count: Math.floor(Math.random() * 200) + 1 }));
+            setCategories(subCategories);
+        };
+        getCategories();
+    }, []);
+
+    return (
+        <aside className="w-64 bg-gray-900 text-gray-400 flex-col min-h-screen hidden lg:flex fixed">
+            <div className="p-6 text-center border-b border-gray-800">
+                <h1 className="text-2xl font-bold text-white">Backing</h1>
+            </div>
+            <nav className="flex-1 px-4 py-6 space-y-2">
+                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                    <Home size={20} className="mr-3" /> Home
+                </a>
+                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                    <BarChart2 size={20} className="mr-3" /> Sales
+                </a>
+                <div>
+                    <button onClick={() => setIsProductsOpen(!isProductsOpen)} className="w-full flex items-center justify-between px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold transition-colors">
+                        <div className="flex items-center">
+                            <ShoppingBag size={20} className="mr-3" /> Products
+                        </div>
+                        <ChevronDown size={18} className={`transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    {isProductsOpen && (
+                        <div className="pl-8 mt-2 space-y-1 border-l border-gray-700 ml-5">
+                             <a href="#" className="flex justify-between items-center text-sm py-2 px-2 rounded-md hover:bg-gray-700">
+                                Show All
+                            </a>
+                            {categories.map(cat => (
+                                <a key={cat.id} href="#" className="flex justify-between items-center text-sm py-2 px-2 rounded-md hover:bg-gray-700">
+                                    {cat.name}
+                                    <span className="bg-gray-600 text-gray-300 text-xs font-mono px-2 py-0.5 rounded-md">{cat.count}</span>
+                                </a>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                 <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                    <FileText size={20} className="mr-3" /> Reports
+                </a>
+                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                    <Users size={20} className="mr-3" /> Customers
+                </a>
+            </nav>
+            <div className="px-4 py-6 border-t border-gray-800 space-y-2">
+                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                    <Settings size={20} className="mr-3" /> Settings
+                </a>
+                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                    <LogOut size={20} className="mr-3" /> Log Out
+                </a>
+            </div>
+        </aside>
+    );
+}
+
+// --- Header, RevenueChart, and StatCard components are the same as before ---
 const Header = () => (
     <header className="flex justify-between items-center py-4 flex-wrap gap-4">
         <div className="relative w-full max-w-xs">
@@ -45,8 +85,13 @@ const Header = () => (
             />
         </div>
         <div className="flex items-center gap-6">
-             <div className="flex items-center gap-2 text-gray-600">
+            <div className="flex items-center gap-2 text-gray-600">
+                <Calendar size={20} />
+                <span className="text-sm font-medium">Tue, 6 Apr 2022</span>
+            </div>
+             <div className="relative flex items-center gap-2 text-gray-600">
                 <Bell size={20} />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
             </div>
             <div className="flex items-center gap-3">
                 <span className="font-semibold text-gray-700">Hypebeast Store</span>
@@ -56,7 +101,33 @@ const Header = () => (
     </header>
 );
 
-const StatCard = ({ title, value, change, changeType, icon: Icon, iconBgColor }) => (
+const RevenueChart = ({ revenue }) => (
+    <div className="bg-white p-6 rounded-xl shadow-md col-span-1 lg:col-span-2">
+        <div className="flex justify-between items-center mb-4">
+            <div>
+                <h3 className="text-lg font-bold text-gray-800">Revenue</h3>
+                <p className="text-2xl font-bold text-gray-900 mt-1">${revenue.toLocaleString()} <span className="text-sm font-semibold text-green-500 ml-2">+8.26%</span></p>
+            </div>
+            <div className="flex gap-4 text-sm">
+                <p className="text-gray-500">Total Earn</p>
+                <p className="text-gray-500">Total Views</p>
+            </div>
+        </div>
+        <div className="h-60 w-full">
+            <svg width="100%" height="100%" viewBox="0 0 500 200" preserveAspectRatio="none">
+                <path d="M 0 150 L 50 120 L 100 140 L 150 100 L 200 130 L 250 80 L 300 110 L 350 120 L 400 90 L 450 110 L 500 100" stroke="#fb923c" fill="none" strokeWidth="2"/>
+                <path d="M 0 160 L 50 170 L 100 130 L 150 150 L 200 120 L 250 160 L 300 140 L 350 180 L 400 150 L 450 170 L 500 140" stroke="#4ade80" fill="none" strokeWidth="2"/>
+                <line x1="0" y1="190" x2="500" y2="190" stroke="#e5e7eb" strokeWidth="1"/>
+                {['4 Mon', '5 Tue', '6 Wed', '7 Thu', '8 Fri', '9 Sat'].map((day, i) => (
+                    <text key={day} x={i * 80 + 20} y="205" fontSize="12" fill="#9ca3af">{day}</text>
+                ))}
+            </svg>
+        </div>
+    </div>
+);
+
+
+const StatCard = ({ title, value, change, icon: Icon, iconBgColor }) => (
     <div className="bg-white p-6 rounded-xl shadow-md flex-1">
         <div className="flex justify-between items-start">
             <div>
@@ -68,59 +139,72 @@ const StatCard = ({ title, value, change, changeType, icon: Icon, iconBgColor })
             </div>
         </div>
         {change && (
-            <p className={`text-xs mt-2 ${changeType === 'increase' ? 'text-green-500' : 'text-red-500'}`}>
+            <p className="text-xs text-gray-500 mt-2">
                 {change}
             </p>
         )}
     </div>
 );
 
-
 // --- MAIN DASHBOARD PAGE COMPONENT ---
-
 const DashboardPage = () => {
-    return (
-        <div className="flex bg-gray-100 font-sans min-h-screen">
-            <Sidebar />
-            <main className="flex-1 p-4 sm:p-8">
-                <Header />
+    const [stats, setStats] = useState({ salesToday: 0, totalEarning: 0, totalOrders: 0, visitorToday: 0 });
+    const [loading, setLoading] = useState(true);
 
-                {/* Stats Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 my-8">
-                    <StatCard 
-                        title="Sales Today" 
-                        value="$120" 
-                        change="Updated every order success" 
-                        icon={DollarSign}
-                        iconBgColor="bg-orange-500"
-                    />
-                    <StatCard 
-                        title="Total Earning" 
-                        value="$81,020" 
-                        change="+8.28% More earning than usual"
-                        changeType="increase"
-                        icon={DollarSign}
-                        iconBgColor="bg-green-500"
-                    />
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            setLoading(true);
+            const fetchedStats = await fetchDashboardStats();
+            setStats(fetchedStats);
+            setLoading(false);
+        };
+        loadDashboardData();
+    }, []);
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-screen">Loading Dashboard...</div>
+    }
+
+    return (
+        <div className="bg-gray-50 font-sans min-h-screen">
+            <Sidebar />
+            <main className="flex-1 p-4 sm:p-8 ml-0 lg:ml-64">
+                <Header />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 my-8">
+                    <RevenueChart revenue={2810} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
+                        <StatCard 
+                            title="Sales Today" 
+                            value={`$${stats.salesToday}`} 
+                            change="Updated every order success" 
+                            icon={DollarSign}
+                            iconBgColor="bg-orange-500"
+                        />
+                        <StatCard 
+                            title="Total Earning" 
+                            value={`$${stats.totalEarning.toLocaleString()}`} 
+                            change="+8.28% More earning than usual"
+                            icon={DollarSign}
+                            iconBgColor="bg-green-500"
+                        />
+                    </div>
+                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <StatCard 
                         title="Total Orders" 
-                        value="102" 
+                        value={stats.totalOrders.toLocaleString()} 
                         change="+2.18% More orders than usual"
-                        changeType="increase"
                         icon={ListOrdered}
                         iconBgColor="bg-blue-500"
                     />
                     <StatCard 
                         title="Visitor Today" 
-                        value="81,020" 
+                        value={stats.visitorToday.toLocaleString()} 
                         change="+3.08% More visitors than usual"
-                        changeType="increase"
                         icon={UserCheck}
                         iconBgColor="bg-indigo-500"
                     />
                 </div>
-
-                {/* Product Client Section */}
                 <ProductClient />
             </main>
         </div>

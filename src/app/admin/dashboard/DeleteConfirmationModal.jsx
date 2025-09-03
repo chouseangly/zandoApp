@@ -1,11 +1,13 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 const DeleteConfirmationModal = ({ isOpen, onClose, product, onProductDeleted }) => {
 
     const handleDelete = async () => {
         try {
-            const response = await fetch(`/api/products/${product.id}`, {
+            const response = await fetch(`${API_BASE_URL}/products/admin/${product.id}`, {
                 method: 'DELETE'
             });
 
@@ -23,7 +25,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, product, onProductDeleted })
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Confirm Deletion</h2>
