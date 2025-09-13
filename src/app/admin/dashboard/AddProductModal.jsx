@@ -1,15 +1,18 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, UploadCloud } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
+import { useSession } from "next-auth/react"; // 1. Import useSession
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
+    const { data: session } = useSession(); // 2. Get the session data
     const [formData, setFormData] = useState({
         name: '',
         description: '',
         basePrice: '',
-        discountPercent: 0,
+        discountPercent: '', // Changed initial state to empty string
         isAvailable: true,
         categoryIds: [],
         variants: [{ color: '', sizes: '', imageCount: 0, files: [], previews: [] }]
@@ -47,7 +50,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
     };
 
     const handleFileChange = (index, e) => {
-        const files = Array.from(e.target.files).slice(0, 6); // Limit to 6 files
+        const files = Array.from(e.target.files).slice(0, 6);
         const newVariants = [...formData.variants];
         newVariants[index].files = files;
         newVariants[index].imageCount = files.length;
@@ -73,13 +76,14 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         const formPayload = new FormData();
         formPayload.append('name', formData.name);
         formPayload.append('description', formData.description);
-        formPayload.append('basePrice', formData.basePrice);
-        formPayload.append('discountPercent', formData.discountPercent);
-        formPayload.append('isAvailable', formData.isAvailable);
+        // ✅ **Data Integrity Fix**
+        formPayload.append('basePrice', formData.basePrice || 0);
+        formPayload.append('discountPercent', formData.discountPercent || 0);
+        formPayload.append('isAvailable', String(formData.isAvailable));
 
         const variantsForApi = formData.variants.map(v => ({
             color: v.color,
-            sizes: v.sizes.split(',').map(s => s.trim()),
+            sizes: v.sizes ? v.sizes.split(',').map(s => s.trim()).filter(s => s) : [],
             imageCount: v.imageCount
         }));
         formPayload.append('variants', JSON.stringify(variantsForApi));
@@ -94,6 +98,13 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         try {
             const response = await fetch(`${API_BASE_URL}/products/admin`, {
                 method: 'POST',
+                // ✅ **Authentication Fix**
+                // The backend requires a token for this secure endpoint.
+                 headers: {
+                    // Note: This assumes you are storing the token in the session object.
+                    // You might need to adjust how you get the token based on your NextAuth setup.
+                    'Authorization': `Bearer ${session?.user?.token}` 
+                },
                 body: formPayload,
             });
 
@@ -101,7 +112,8 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
                 onProductAdded();
                 onClose();
             } else {
-                console.error("Failed to add product");
+                 const errorText = await response.text();
+                console.error("Failed to add product:", errorText);
             }
         } catch (error) {
             console.error("Error adding product:", error);
@@ -118,7 +130,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
                     <button onClick={onClose}><X size={24} /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4 max-h-[85vh] overflow-y-auto pr-4">
-                    {/* Basic Info */}
+                    {/* Form inputs remain the same */}
                     <input name="name" value={formData.name} onChange={handleInputChange} placeholder="Product Name" className="w-full p-2 border rounded" required />
                     <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full p-2 border rounded" />
                     <div className="grid grid-cols-2 gap-4">
@@ -126,7 +138,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
                         <input name="discountPercent" type="number" value={formData.discountPercent} onChange={handleInputChange} placeholder="Discount %" className="w-full p-2 border rounded" />
                     </div>
 
-                    {/* Categories */}
+                    {/* Categories Section */}
                     <div>
                         <label className="block font-medium mb-2">Categories</label>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border p-4 rounded-md max-h-60 overflow-y-auto">
@@ -157,7 +169,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
                         </div>
                     </div>
 
-                    {/* Variants */}
+                    {/* Variants Section */}
                     <div>
                         <div className="flex justify-between items-center mt-4 mb-2">
                             <h3 className="font-bold">Variants</h3>
@@ -173,7 +185,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <input value={variant.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} placeholder="Color (e.g., Blue)" className="w-full p-2 border rounded mb-2" required />
-                                        <input value={variant.sizes} onChange={e => handleVariantChange(index, 'sizes', e.target.value)} placeholder="Sizes (comma-separated, e.g., S,M,L)" className="w-full p-2 border rounded" required />
+                                        <input value={variant.sizes} onChange={e => handleVariantChange(index, 'sizes', e.target.value)} placeholder="Sizes (comma-separated, e.g., S,M,L)" className="w-full p-2 border rounded" />
                                     </div>
                                     <div>
                                         <label className="w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-100">
