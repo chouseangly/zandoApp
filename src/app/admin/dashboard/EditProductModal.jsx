@@ -3,12 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, UploadCloud } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
-import { useSession } from "next-auth/react"; // 1. Import useSession
+import { useSession } from "next-auth/react";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
-    const { data: session } = useSession(); // 2. Get the session data
+    const { data: session } = useSession();
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -90,11 +90,13 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         
         const formPayload = new FormData();
 
-        if (formData.name !== product.name) formPayload.append('name', formData.name);
-        if (formData.description !== product.description) formPayload.append('description', formData.description);
-        if (String(formData.basePrice) !== String(product.originalPrice)) formPayload.append('basePrice', formData.basePrice || 0);
-        if (formData.discountPercent !== product.discount) formPayload.append('discountPercent', formData.discountPercent || 0);
-        if (formData.isAvailable !== product.isAvailable) formPayload.append('isAvailable', String(formData.isAvailable));
+        // ✅ **THIS IS THE CRITICAL FRONTEND FIX**
+        // Always send all fields to ensure the backend receives a complete object.
+        formPayload.append('name', formData.name);
+        formPayload.append('description', formData.description);
+        formPayload.append('basePrice', formData.basePrice || 0);
+        formPayload.append('discountPercent', formData.discountPercent || 0);
+        formPayload.append('isAvailable', String(formData.isAvailable));
         
         const variantsForApi = formData.variants.map(v => ({
             color: v.color,
@@ -113,8 +115,6 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         });
 
         try {
-            // ✅ **Authentication Fix**
-            // Ensure you have a valid token before sending the request.
              if (!session?.user?.token) {
                  console.error("Authentication token not found.");
                  return;

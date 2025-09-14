@@ -1,21 +1,37 @@
+"use client";
+
 import React from 'react';
 import { X } from 'lucide-react';
+import { useSession } from "next-auth/react"; // 1. Import useSession
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const DeleteConfirmationModal = ({ isOpen, onClose, product, onProductDeleted }) => {
+    const { data: session } = useSession(); // 2. Get the session data
 
     const handleDelete = async () => {
         try {
+            // ✅ **Authentication Fix**
+            // Ensure you have a valid token before sending the request.
+            if (!session?.user?.token) {
+                console.error("Authentication token not found.");
+                // Optionally, show a toast notification to the user here.
+                return;
+            }
+
             const response = await fetch(`${API_BASE_URL}/products/admin/${product.id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${session.user.token}`
+                }
             });
 
             if (response.ok) {
                 onProductDeleted();
                 onClose();
             } else {
-                console.error("Failed to delete product");
+                const errorText = await response.text();
+                console.error("Failed to delete product:", errorText);
             }
         } catch (error) {
             console.error("Error deleting product:", error);
