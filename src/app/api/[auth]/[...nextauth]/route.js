@@ -1,5 +1,3 @@
-// app/api/auth/[...nextauth]/route.js
-
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -20,7 +18,6 @@ export const authOptions = {
       },
       async authorize(credentials, req) {
         try {
-          // MODIFIED: Login to your custom backend
           const res = await fetch(`${API_BASE_URL}/auths/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -37,7 +34,6 @@ export const authOptions = {
 
           const user = await res.json();
           
-          // IMPORTANT: Return the user object from your backend
           if (user) {
             return user;
           } else {
@@ -53,25 +49,27 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // MODIFIED: Persist user data from authorize() into the token
+      // ✅ **THE FIX IS HERE: Add the token from the backend to the NextAuth token**
       if (user) {
         token.userId = user.userId;
         token.role = user.role;
         token.name = user.userName;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
+        token.token = user.token; // Persist the token
       }
       return token;
     },
 
     async session({ session, token }) {
-      // MODIFIED: Pass the data from the token to the session object
+      // ✅ **THE FIX IS HERE: Pass the token to the client-side session object**
       if (token) {
         session.user.id = token.userId;
         session.user.role = token.role;
         session.user.name = token.name;
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
+        session.user.token = token.token; // Make the token available on the session
       }
       return session;
     },

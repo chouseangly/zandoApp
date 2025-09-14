@@ -1,10 +1,14 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, UploadCloud } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
+import { useSession } from "next-auth/react"; // 1. Import useSession
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
+    const { data: session } = useSession(); // 2. Get the session data
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -61,7 +65,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
     };
     
     const handleFileChange = (index, e) => {
-        const files = Array.from(e.target.files).slice(0, 6); // Limit to 6 files
+        const files = Array.from(e.target.files).slice(0, 6);
         const newVariants = [...formData.variants];
         newVariants[index].files = files;
         newVariants[index].imageCount = files.length;
@@ -88,13 +92,13 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
 
         if (formData.name !== product.name) formPayload.append('name', formData.name);
         if (formData.description !== product.description) formPayload.append('description', formData.description);
-        if (formData.basePrice.toString() !== product.originalPrice.toString()) formPayload.append('basePrice', formData.basePrice);
-        if (formData.discountPercent !== product.discount) formPayload.append('discountPercent', formData.discountPercent);
-        if (formData.isAvailable !== product.isAvailable) formPayload.append('isAvailable', formData.isAvailable);
+        if (String(formData.basePrice) !== String(product.originalPrice)) formPayload.append('basePrice', formData.basePrice || 0);
+        if (formData.discountPercent !== product.discount) formPayload.append('discountPercent', formData.discountPercent || 0);
+        if (formData.isAvailable !== product.isAvailable) formPayload.append('isAvailable', String(formData.isAvailable));
         
         const variantsForApi = formData.variants.map(v => ({
             color: v.color,
-            sizes: Array.isArray(v.sizes) ? v.sizes : v.sizes.split(',').map(s => s.trim()),
+            sizes: Array.isArray(v.sizes) ? v.sizes : (v.sizes ? v.sizes.split(',').map(s => s.trim()).filter(s => s) : []),
             imageCount: v.imageCount
         }));
         
@@ -109,8 +113,18 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         });
 
         try {
+            // ✅ **Authentication Fix**
+            // Ensure you have a valid token before sending the request.
+             if (!session?.user?.token) {
+                 console.error("Authentication token not found.");
+                 return;
+            }
+
             const response = await fetch(`${API_BASE_URL}/products/admin/${product.id}`, {
                 method: 'PUT',
+                 headers: {
+                    'Authorization': `Bearer ${session.user.token}` 
+                },
                 body: formPayload
             });
 
@@ -118,7 +132,8 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                 onProductUpdated();
                 onClose();
             } else {
-                console.error("Failed to update product");
+                const errorText = await response.text();
+                console.error("Failed to update product", errorText);
             }
         } catch (error) {
             console.error("Error updating product:", error);
@@ -135,14 +150,12 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                     <button onClick={onClose}><X size={24} /></button>
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-4 max-h-[85vh] overflow-y-auto pr-4">
-                    {/* Basic Info */}
                     <input name="name" value={formData.name} onChange={handleInputChange} placeholder="Product Name" className="w-full p-2 border rounded" />
                     <textarea name="description" value={formData.description} onChange={handleInputChange} placeholder="Description" className="w-full p-2 border rounded" />
                     <div className="grid grid-cols-2 gap-4">
                         <input name="basePrice" type="number" value={formData.basePrice} onChange={handleInputChange} placeholder="Price" className="w-full p-2 border rounded" />
                         <input name="discountPercent" type="number" value={formData.discountPercent} onChange={handleInputChange} placeholder="Discount %" className="w-full p-2 border rounded" />
                     </div>
-                     {/* Status Toggle */}
                     <div className="flex items-center gap-4">
                         <label className="font-medium">Status:</label>
                         <span className={`${!formData.isAvailable ? 'text-red-500' : 'text-gray-400'}`}>Out of Stock</span>
@@ -152,7 +165,6 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                         <span className={`${formData.isAvailable ? 'text-green-500' : 'text-gray-400'}`}>Available</span>
                     </div>
 
-                    {/* Categories */}
                     <div>
                         <label className="block font-medium mb-2">Categories</label>
                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border p-4 rounded-md max-h-60 overflow-y-auto">
@@ -183,7 +195,6 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                         </div>
                     </div>
 
-                    {/* Variants */}
                     <div>
                         <div className="flex justify-between items-center mt-4 mb-2">
                              <h3 className="font-bold">Variants</h3>
