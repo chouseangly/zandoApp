@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { status } = useSession();
+  const { data: session, status } = useSession();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -37,7 +37,12 @@ export default function LoginPage() {
       toast.error("Login failed. Please check your credentials.", { id: toastId });
     } else {
       toast.success("Login successful!", { id: toastId });
-      router.push("/"); // Redirect on success
+      // Redirect based on role after successful login
+      if (session?.user?.role === "ADMIN") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/");
+      }
     }
     setLoading(false);
   };
@@ -47,11 +52,15 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    // If user is already authenticated, redirect them to the homepage
+    // If user is already authenticated, redirect them
     if (status === "authenticated") {
-      router.push("/");
+      if (session?.user?.role === "ADMIN") {
+        router.push("/admin/dashboard");
+      } else {
+        router.push("/");
+      }
     }
-  }, [status, router]);
+  }, [status, session, router]);
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gray-50 p-4">

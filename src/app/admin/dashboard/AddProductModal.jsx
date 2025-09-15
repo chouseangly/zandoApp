@@ -18,6 +18,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         variants: [{ color: '', sizes: '', imageCount: 0, files: [], previews: [] }]
     });
     const [allCategories, setAllCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(false); // ✅ **FIX: Add isLoading state**
 
     useEffect(() => {
         const loadCategories = async () => {
@@ -72,6 +73,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true); // ✅ **FIX: Set loading state to true**
         
         const formPayload = new FormData();
         formPayload.append('name', formData.name);
@@ -95,7 +97,6 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         });
 
         try {
-            // ✅ MODIFIED: Ensure you have a valid token before sending.
             if (!session?.user?.token) {
                  console.error("Authentication token not found.");
                  return;
@@ -118,6 +119,8 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
             }
         } catch (error) {
             console.error("Error adding product:", error);
+        } finally {
+            setIsLoading(false); // ✅ **FIX: Set loading state to false**
         }
     };
     
@@ -204,7 +207,9 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
 
                     <div className="flex justify-end gap-3 pt-4">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
-                        <button type="submit" className="px-4 py-2 bg-black text-white rounded-md">Add Product</button>
+                        <button type="submit" className="px-4 py-2 bg-black text-white rounded-md" disabled={isLoading}>
+                            {isLoading ? 'Adding...' : 'Add Product'}
+                        </button>
                     </div>
                 </form>
             </div>

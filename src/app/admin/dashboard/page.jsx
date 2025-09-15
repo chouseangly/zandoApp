@@ -5,7 +5,7 @@ import ProductClient from './ProductClient';
 import { Home, BarChart2, ShoppingBag, Users, Settings, LogOut, Search, Calendar, Bell, DollarSign, ListOrdered, UserCheck, ChevronDown, FileText } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
 import { fetchDashboardStats } from '@/services/dashboard.service';
-import { useSession } from 'next-auth/react';
+import { useSession,signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 // FIX: Create a new recursive component to handle nested categories
@@ -83,9 +83,9 @@ const Sidebar = ({ onSelectCategory, selectedCategory }) => {
                 <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
                     <Settings size={20} className="mr-3" /> Settings
                 </a>
-                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                <button onClick={() => signOut({ callbackUrl: '/' })} className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
                     <LogOut size={20} className="mr-3" /> Log Out
-                </a>
+                </button>
             </div>
         </aside>
     );

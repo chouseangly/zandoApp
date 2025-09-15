@@ -1,12 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+// ✅ FIX: Import useParams from next/navigation
+import { useParams } from 'next/navigation';
 import { fetchProductsByCategoryId } from '@/services/getCategoryById.service';
 import ProductCard from '@/components/landing/ProductCard';
 
-// The page component receives 'params' containing the categoryId from the URL
-const CategoryPage = ({ params }) => {
+const CategoryPage = () => {
+  // ✅ FIX: Use the useParams hook to get the categoryId
+  const params = useParams();
   const { categoryId } = params;
+
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,11 +24,10 @@ const CategoryPage = ({ params }) => {
       };
       getProducts();
     }
-  }, [categoryId]); // Re-run the effect if the categoryId changes
+  }, [categoryId]);
 
   return (
     <div className="w-full mx-auto py-8 px-4 md:px-8">
-      {/* You can add a dynamic title here later, e.g., fetch category name */}
       <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">
         Category Products
       </h1>

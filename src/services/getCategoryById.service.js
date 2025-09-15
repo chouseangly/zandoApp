@@ -1,7 +1,7 @@
-
 export const fetchProductsByCategoryId = async (categoryId) => {
   try {
-    const response = await fetch(`http://localhost:8080/api/products/category/${categoryId}`);
+    // ✅ FIX: Corrected the API endpoint URL
+    const response = await fetch(`http://localhost:8080/api/v1/products/category/${categoryId}`);
 
     if (!response.ok) {
       throw new Error('Network response was not ok');

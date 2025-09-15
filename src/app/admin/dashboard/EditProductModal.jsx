@@ -19,6 +19,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         variants: []
     });
     const [allCategories, setAllCategories] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const loadCategories = async () => {
@@ -39,7 +40,12 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                 discountPercent: product.discount || 0,
                 isAvailable: product.isAvailable,
                 categoryIds: product.categories.map(c => c.id),
-                variants: product.gallery.map(g => ({...g, imageCount: g.images.length, files: [], previews: g.images})) || []
+                variants: product.gallery.map(g => ({
+                    ...g,
+                    imageCount: g.images.length,
+                    files: [],
+                    previews: g.images
+                })) || []
             });
         }
     }, [product]);
@@ -48,8 +54,8 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
-    
-     const handleCategoryChange = (categoryId) => {
+
+    const handleCategoryChange = (categoryId) => {
         setFormData(prev => {
             const newCategoryIds = prev.categoryIds.includes(categoryId)
                 ? prev.categoryIds.filter(id => id !== categoryId)
@@ -63,7 +69,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         newVariants[index][field] = value;
         setFormData(prev => ({ ...prev, variants: newVariants }));
     };
-    
+
     const handleFileChange = (index, e) => {
         const files = Array.from(e.target.files).slice(0, 6);
         const newVariants = [...formData.variants];
@@ -87,43 +93,42 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        const formPayload = new FormData();
+        setIsLoading(true);
 
-        // ✅ **THIS IS THE CRITICAL FRONTEND FIX**
-        // Always send all fields to ensure the backend receives a complete object.
+        const formPayload = new FormData();
         formPayload.append('name', formData.name);
         formPayload.append('description', formData.description);
         formPayload.append('basePrice', formData.basePrice || 0);
         formPayload.append('discountPercent', formData.discountPercent || 0);
         formPayload.append('isAvailable', String(formData.isAvailable));
-        
+
         const variantsForApi = formData.variants.map(v => ({
             color: v.color,
             sizes: Array.isArray(v.sizes) ? v.sizes : (v.sizes ? v.sizes.split(',').map(s => s.trim()).filter(s => s) : []),
-            imageCount: v.imageCount
+            imageCount: v.imageCount,
+            images: v.previews, // Keep existing images
         }));
-        
+
         formPayload.append('variants', JSON.stringify(variantsForApi));
         formData.categoryIds.forEach(id => formPayload.append('categoryIds', id));
         formData.variants.forEach(variant => {
-            if(variant.files) {
-               variant.files.forEach(file => {
+            if (variant.files) {
+                variant.files.forEach(file => {
                     formPayload.append('images', file);
                 });
             }
         });
 
         try {
-             if (!session?.user?.token) {
-                 console.error("Authentication token not found.");
-                 return;
+            if (!session?.user?.token) {
+                console.error("Authentication token not found.");
+                return;
             }
 
             const response = await fetch(`${API_BASE_URL}/products/admin/${product.id}`, {
                 method: 'PUT',
-                 headers: {
-                    'Authorization': `Bearer ${session.user.token}` 
+                headers: {
+                    'Authorization': `Bearer ${session.user.token}`
                 },
                 body: formPayload
             });
@@ -137,9 +142,11 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
             }
         } catch (error) {
             console.error("Error updating product:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
-    
+
     if (!isOpen) return null;
 
     return (
@@ -159,7 +166,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                     <div className="flex items-center gap-4">
                         <label className="font-medium">Status:</label>
                         <span className={`${!formData.isAvailable ? 'text-red-500' : 'text-gray-400'}`}>Out of Stock</span>
-                        <button type="button" onClick={() => setFormData(p => ({...p, isAvailable: !p.isAvailable}))} className={`relative inline-flex h-6 w-11 items-center rounded-full ${formData.isAvailable ? 'bg-green-500' : 'bg-gray-300'}`}>
+                        <button type="button" onClick={() => setFormData(p => ({ ...p, isAvailable: !p.isAvailable }))} className={`relative inline-flex h-6 w-11 items-center rounded-full ${formData.isAvailable ? 'bg-green-500' : 'bg-gray-300'}`}>
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${formData.isAvailable ? 'translate-x-6' : 'translate-x-1'}`} />
                         </button>
                         <span className={`${formData.isAvailable ? 'text-green-500' : 'text-gray-400'}`}>Available</span>
@@ -167,7 +174,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
 
                     <div>
                         <label className="block font-medium mb-2">Categories</label>
-                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border p-4 rounded-md max-h-60 overflow-y-auto">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border p-4 rounded-md max-h-60 overflow-y-auto">
                             {allCategories.map(mainCat => (
                                 <div key={mainCat.id}>
                                     <h4 className="font-bold text-lg text-gray-800 mb-3">{mainCat.name}</h4>
@@ -197,8 +204,8 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
 
                     <div>
                         <div className="flex justify-between items-center mt-4 mb-2">
-                             <h3 className="font-bold">Variants</h3>
-                             <button type="button" onClick={addVariant} className="flex items-center gap-1 text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                            <h3 className="font-bold">Variants</h3>
+                            <button type="button" onClick={addVariant} className="flex items-center gap-1 text-sm bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
                                 <Plus size={16} /> Add Variant
                             </button>
                         </div>
@@ -231,7 +238,9 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
 
                     <div className="flex justify-end gap-3 pt-4">
                         <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-200 rounded-md">Cancel</button>
-                        <button type="submit" className="px-4 py-2 bg-black text-white rounded-md">Save Changes</button>
+                        <button type="submit" className="px-4 py-2 bg-black text-white rounded-md" disabled={isLoading}>
+                            {isLoading ? 'Saving...' : 'Save Changes'}
+                        </button>
                     </div>
                 </form>
             </div>
