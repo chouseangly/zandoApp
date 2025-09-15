@@ -8,16 +8,29 @@ import { fetchDashboardStats } from '@/services/dashboard.service';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
-const Sidebar = () => {
+// FIX: Create a new recursive component to handle nested categories
+const SubCategory = ({ category, onSelectCategory, selectedCategory, level }) => {
+    return (
+        <div style={{ marginLeft: `${level * 10}px` }}>
+            <a href="#" onClick={(e) => { e.preventDefault(); onSelectCategory(category.id); }}
+               className={`block text-sm py-1.5 px-2 rounded-md ${selectedCategory === category.id ? 'bg-gray-600 font-semibold' : 'hover:bg-gray-700'}`}>
+                {category.name}
+            </a>
+            {category.children && category.children.map(child => (
+                <SubCategory key={child.id} category={child} onSelectCategory={onSelectCategory} selectedCategory={selectedCategory} level={level + 1} />
+            ))}
+        </div>
+    );
+};
+
+const Sidebar = ({ onSelectCategory, selectedCategory }) => {
     const [categories, setCategories] = useState([]);
     const [isProductsOpen, setIsProductsOpen] = useState(true);
 
     useEffect(() => {
         const getCategories = async () => {
             const fetchedCategories = await fetchCategories();
-            const subCategories = fetchedCategories.flatMap(cat => cat.children || [])
-                .map(subCat => ({ ...subCat, count: Math.floor(Math.random() * 200) + 1 }));
-            setCategories(subCategories);
+            setCategories(fetchedCategories);
         };
         getCategories();
     }, []);
@@ -42,15 +55,19 @@ const Sidebar = () => {
                         <ChevronDown size={18} className={`transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isProductsOpen && (
-                        <div className="pl-8 mt-2 space-y-1 border-l border-gray-700 ml-5">
-                            <a href="#" className="flex justify-between items-center text-sm py-2 px-2 rounded-md hover:bg-gray-700">
+                         // FIX: Added 'hide-scrollbar' class to the scrollable container
+                        <div className="pl-4 mt-2 space-y-1 border-l border-gray-700 ml-5 max-h-[calc(100vh-250px)] overflow-y-auto hide-scrollbar">
+                            <a href="#" onClick={(e) => { e.preventDefault(); onSelectCategory(null); }}
+                               className={`flex justify-between items-center text-sm py-2 px-2 rounded-md ${!selectedCategory ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                                 Show All
                             </a>
-                            {categories.map(cat => (
-                                <a key={cat.id} href="#" className="flex justify-between items-center text-sm py-2 px-2 rounded-md hover:bg-gray-700">
-                                    {cat.name}
-                                    <span className="bg-gray-600 text-gray-300 text-xs font-mono px-2 py-0.5 rounded-md">{cat.count}</span>
-                                </a>
+                            {categories.map(mainCat => (
+                                <div key={mainCat.id} className="pt-2">
+                                    <h4 className="font-bold text-gray-300 uppercase text-xs tracking-wider px-2">{mainCat.name}</h4>
+                                    {mainCat.children.map(subCat => (
+                                        <SubCategory key={subCat.id} category={subCat} onSelectCategory={onSelectCategory} selectedCategory={selectedCategory} level={1} />
+                                    ))}
+                                </div>
                             ))}
                         </div>
                     )}
@@ -74,36 +91,44 @@ const Sidebar = () => {
     );
 }
 
-// FIX 1: Pass props to Header for search functionality
-const Header = ({ searchQuery, onSearchChange }) => (
-    <header className="flex justify-between items-center py-4 flex-wrap gap-4">
-        <div className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-                type="text"
-                placeholder="Search a product"
-                // Connect the input to the state from the parent component
-                value={searchQuery}
-                onChange={onSearchChange}
-                className="w-full bg-white py-2 pl-10 pr-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-        </div>
-        <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-gray-600">
-                <Calendar size={20} />
-                <span className="text-sm font-medium">Tue, 6 Apr 2022</span>
+const Header = ({ searchQuery, onSearchChange }) => {
+    const [currentDate, setCurrentDate] = useState('');
+
+    useEffect(() => {
+        const date = new Date();
+        const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+        setCurrentDate(date.toLocaleDateString('en-US', options));
+    }, []);
+
+    return (
+        <header className="flex justify-between items-center py-4 flex-wrap gap-4">
+            <div className="relative w-full max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                    type="text"
+                    placeholder="Search a product"
+                    value={searchQuery}
+                    onChange={onSearchChange}
+                    className="w-full bg-white py-2 pl-10 pr-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
             </div>
-            <div className="relative flex items-center gap-2 text-gray-600">
-                <Bell size={20} />
-                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 text-gray-600">
+                    <Calendar size={20} />
+                    <span className="text-sm font-medium">{currentDate}</span>
+                </div>
+                <div className="relative flex items-center gap-2 text-gray-600">
+                    <Bell size={20} />
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                </div>
+                <div className="flex items-center gap-3">
+                    <span className="font-semibold text-gray-700">Hypebeast Store</span>
+                    <div className="w-10 h-10 bg-red-500 text-white flex items-center justify-center rounded-full font-bold">H</div>
+                </div>
             </div>
-            <div className="flex items-center gap-3">
-                <span className="font-semibold text-gray-700">Hypebeast Store</span>
-                <div className="w-10 h-10 bg-red-500 text-white flex items-center justify-center rounded-full font-bold">H</div>
-            </div>
-        </div>
-    </header>
-);
+        </header>
+    );
+};
 
 const RevenueChart = ({ revenue }) => (
     <div className="bg-white p-6 rounded-xl shadow-md col-span-1 lg:col-span-2">
@@ -117,24 +142,18 @@ const RevenueChart = ({ revenue }) => (
                 <p className="text-gray-500">Total Views</p>
             </div>
         </div>
-        {/* FIX 2: Adjusted chart SVG to make day labels visible */}
-        <div className="h-64 w-full"> {/* Increased height slightly for better spacing */}
-             {/* 1. Increased viewBox height from 200 to 220 to create space for labels */}
+        <div className="h-64 w-full">
             <svg width="100%" height="100%" viewBox="0 0 500 220" preserveAspectRatio="none">
                 <path d="M 0 150 L 50 120 L 100 140 L 150 100 L 200 130 L 250 80 L 300 110 L 350 120 L 400 90 L 450 110 L 500 100" stroke="#fb923c" fill="none" strokeWidth="2" />
                 <path d="M 0 160 L 50 170 L 100 130 L 150 150 L 200 120 L 250 160 L 300 140 L 350 180 L 400 150 L 450 170 L 500 140" stroke="#4ade80" fill="none" strokeWidth="2" />
-                {/* 2. Moved the axis line down */}
                 <line x1="0" y1="200" x2="500" y2="200" stroke="#e5e7eb" strokeWidth="1" />
                 {['4 Mon', '5 Tue', '6 Wed', '7 Thu', '8 Fri', '9 Sat'].map((day, i) => (
-                    // 3. Moved text labels down to y="215" so they are inside the new viewBox
-                    // 4. Added textAnchor="middle" for better centering of the labels
                     <text key={day} x={i * 83 + 41.5} y="215" fontSize="12" fill="#9ca3af" textAnchor="middle">{day}</text>
                 ))}
             </svg>
         </div>
     </div>
 );
-
 
 const StatCard = ({ title, value, change, icon: Icon, iconBgColor }) => (
     <div className="bg-white p-6 rounded-xl shadow-md flex-1">
@@ -155,13 +174,26 @@ const StatCard = ({ title, value, change, icon: Icon, iconBgColor }) => (
     </div>
 );
 
+// FIX: Added a style tag to hide the scrollbar
+const GlobalStyles = () => (
+  <style jsx global>{`
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+  `}</style>
+);
+
 const DashboardPage = () => {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [stats, setStats] = useState({ salesToday: 0, totalEarning: 0, totalOrders: 0, visitorToday: 0 });
     const [loading, setLoading] = useState(true);
-    // FIX 1: Add state for the search query
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState(null);
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -183,9 +215,12 @@ const DashboardPage = () => {
 
     return (
         <div className="bg-gray-50 font-sans min-h-screen">
-            <Sidebar />
+            <GlobalStyles />
+            <Sidebar 
+                selectedCategory={selectedCategory} 
+                onSelectCategory={setSelectedCategory} 
+            />
             <main className="flex-1 p-4 sm:p-8 ml-0 lg:ml-64">
-                {/* FIX 1: Pass state and handler function to Header */}
                 <Header 
                     searchQuery={searchQuery}
                     onSearchChange={(e) => setSearchQuery(e.target.value)}
@@ -225,9 +260,10 @@ const DashboardPage = () => {
                         iconBgColor="bg-indigo-500"
                     />
                 </div>
-                {/* FIX 1: Pass the search query down to the ProductClient component */}
-                {/* You will now need to use this 'searchQuery' prop inside ProductClient to filter your products. */}
-                <ProductClient searchQuery={searchQuery} />
+                <ProductClient 
+                    searchQuery={searchQuery} 
+                    selectedCategory={selectedCategory} 
+                />
             </main>
         </div>
     );
