@@ -1,13 +1,15 @@
 "use client"
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plus, Edit, Trash2, ChevronDown } from 'lucide-react';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 import DeleteConfirmationModal from './DeleteConfirmationModal';
+// ✅ 1. Import BOTH service functions
 import { fetchAdminProducts } from '@/services/dashboard.service';
+import { fetchProductsByCategoryId } from '@/services/getCategoryById.service';
 
-const StatusBadge = ({ isAvailable }) => { // ✅ MODIFIED: Accept isAvailable prop
+const StatusBadge = ({ isAvailable }) => {
     const baseClasses = "px-3 py-1 text-xs font-semibold rounded-full inline-block";
     const statusText = isAvailable ? "Available" : "Out of stock";
     const statusStyle = isAvailable ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
@@ -15,7 +17,8 @@ const StatusBadge = ({ isAvailable }) => { // ✅ MODIFIED: Accept isAvailable p
     return <span className={`${baseClasses} ${statusStyle}`}>{statusText}</span>;
 };
 
-const ProductClient = () => {
+// ✅ 2. Accept props for filtering
+const ProductClient = ({ searchQuery, selectedCategory }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isAddModalOpen, setAddModalOpen] = useState(false);
@@ -23,16 +26,43 @@ const ProductClient = () => {
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
+    // ✅ 3. Create a helper to add mock stats for data consistency
+    const addMockStats = (product) => ({
+      ...product,
+      sell: Math.floor(Math.random() * 150),
+      view: Math.floor(Math.random() * 15000),
+      earning: product.price * Math.floor(Math.random() * 100),
+    });
+
+    // ✅ 4. Make the data loading function dynamic based on selectedCategory
     const loadProducts = useCallback(async () => {
         setLoading(true);
-        const fetchedProducts = await fetchAdminProducts();
+        let fetchedProducts = [];
+        if (selectedCategory) {
+            // Fetch by category ID if one is selected
+            const productsByCategory = await fetchProductsByCategoryId(selectedCategory);
+            fetchedProducts = productsByCategory.map(addMockStats); // Add mock stats for consistency
+        } else {
+            // Fetch all products if "Show All" is selected
+            fetchedProducts = await fetchAdminProducts();
+        }
         setProducts(fetchedProducts);
         setLoading(false);
-    }, []);
+    }, [selectedCategory]); // Re-run this function when the category changes
 
     useEffect(() => {
         loadProducts();
     }, [loadProducts]);
+    
+    // ✅ 5. Apply the text search on the fetched product list
+    const filteredProducts = useMemo(() => {
+        if (!searchQuery) {
+            return products;
+        }
+        return products.filter(product =>
+            product.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [products, searchQuery]);
 
     const handleEdit = (product) => {
         setSelectedProduct(product);
@@ -79,7 +109,8 @@ const ProductClient = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white">
-                            {products.map((product, index) => (
+                            {/* ✅ 6. Render the final filtered list */}
+                            {filteredProducts.map((product, index) => (
                                 <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-50">
                                     <td className="px-6 py-4 text-sm font-medium text-gray-500">{index + 1}</td>
                                     <td className="px-6 py-4">
@@ -87,11 +118,10 @@ const ProductClient = () => {
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-800 font-semibold">{product.name}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600">${product.price?.toFixed(2)}</td>
-                                    {/* ✅ MODIFIED: Pass isAvailable to the badge */}
                                     <td className="px-6 py-4 text-sm"><StatusBadge isAvailable={product.isAvailable} /></td>
                                     <td className="px-6 py-4 text-sm text-gray-600">{product.sell}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-600">{product.view.toLocaleString()}</td>
-                                    <td className="px-6 py-4 text-sm font-semibold text-gray-800">${product.earning.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-sm text-gray-600">{product.view?.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-sm font-semibold text-gray-800">${product.earning?.toLocaleString()}</td>
                                     <td className="px-6 py-4 text-sm font-medium">
                                         <div className="flex items-center gap-4">
                                             <button onClick={() => handleEdit(product)} className="text-gray-400 hover:text-blue-600"><Edit size={18} /></button>

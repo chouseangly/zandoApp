@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import ProductClient from './ProductClient';
-import { Home, BarChart2, ShoppingBag, Users, Settings, LogOut, Search, Calendar, Bell, DollarSign, ListOrdered, UserCheck, ChevronDown, FileText } from 'lucide-react';
+import { LayoutDashboard, BarChart2, ShoppingBag, Users, Settings, LogOut, Search, Calendar, Bell, DollarSign, ListOrdered, UserCheck, ChevronDown, FileText } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
 import { fetchDashboardStats } from '@/services/dashboard.service';
-import { useSession,signOut } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // ✅ 1. Import Link from Next.js
 
-// FIX: Create a new recursive component to handle nested categories
 const SubCategory = ({ category, onSelectCategory, selectedCategory, level }) => {
     return (
         <div style={{ marginLeft: `${level * 10}px` }}>
@@ -41,22 +41,21 @@ const Sidebar = ({ onSelectCategory, selectedCategory }) => {
                 <h1 className="text-2xl font-bold text-white"> Dashboard</h1>
             </div>
             <nav className="flex-1 px-4 py-6 space-y-2">
-                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
-                    <Home size={20} className="mr-3" /> Home
-                </a>
+                <Link href="/admin/dashboard" className="flex items-center px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold transition-colors">
+                    <LayoutDashboard size={20} className="mr-3" /> Dashboard
+                </Link>
                 <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
                     <BarChart2 size={20} className="mr-3" /> Sales
                 </a>
                 <div>
-                    <button onClick={() => setIsProductsOpen(!isProductsOpen)} className="w-full flex items-center justify-between px-4 py-2 rounded-lg bg-gray-700 text-white font-semibold transition-colors">
+                    <button onClick={() => setIsProductsOpen(!isProductsOpen)} className="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
                         <div className="flex items-center">
                             <ShoppingBag size={20} className="mr-3" /> Products
                         </div>
                         <ChevronDown size={18} className={`transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isProductsOpen && (
-                         // FIX: Added 'hide-scrollbar' class to the scrollable container
-                        <div className="pl-4 mt-2 space-y-1 border-l border-gray-700 ml-5 max-h-[calc(100vh-250px)] overflow-y-auto hide-scrollbar">
+                         <div className="pl-4 mt-2 space-y-1 border-l border-gray-700 ml-5 max-h-[calc(100vh-250px)] overflow-y-auto hide-scrollbar">
                             <a href="#" onClick={(e) => { e.preventDefault(); onSelectCategory(null); }}
                                className={`flex justify-between items-center text-sm py-2 px-2 rounded-md ${!selectedCategory ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                                 Show All
@@ -72,9 +71,10 @@ const Sidebar = ({ onSelectCategory, selectedCategory }) => {
                         </div>
                     )}
                 </div>
-                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                 {/* ✅ 2. Add the new Link to the Reports page */}
+                <Link href="/admin/reports" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
                     <FileText size={20} className="mr-3" /> Reports
-                </a>
+                </Link>
                 <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
                     <Users size={20} className="mr-3" /> Customers
                 </a>
@@ -174,15 +174,14 @@ const StatCard = ({ title, value, change, icon: Icon, iconBgColor }) => (
     </div>
 );
 
-// FIX: Added a style tag to hide the scrollbar
 const GlobalStyles = () => (
   <style jsx global>{`
     .hide-scrollbar::-webkit-scrollbar {
       display: none;
     }
     .hide-scrollbar {
-      -ms-overflow-style: none;  /* IE and Edge */
-      scrollbar-width: none;  /* Firefox */
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   `}</style>
 );
