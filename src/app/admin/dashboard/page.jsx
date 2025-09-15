@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import ProductClient from './ProductClient';
 import { DollarSign, ListOrdered, UserCheck } from 'lucide-react';
 import { fetchDashboardStats } from '@/services/dashboard.service';
 import { useSession } from 'next-auth/react';
@@ -51,7 +50,7 @@ const StatCard = ({ title, value, change, icon: Icon, iconBgColor }) => (
     </div>
 );
 
-const DashboardPage = ({ searchQuery, selectedCategory }) => {
+const DashboardPage = () => {
     const { status } = useSession();
     const router = useRouter();
     const [stats, setStats] = useState({ salesToday: 0, totalEarning: 0, totalOrders: 0, visitorToday: 0 });
@@ -110,10 +109,6 @@ const DashboardPage = ({ searchQuery, selectedCategory }) => {
                     iconBgColor="bg-indigo-500"
                 />
             </div>
-            <ProductClient 
-                searchQuery={searchQuery} 
-                selectedCategory={selectedCategory} 
-            />
         </div>
     );
 };

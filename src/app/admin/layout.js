@@ -53,12 +53,14 @@ const Sidebar = ({ onSelectCategory, selectedCategory }) => {
                     <BarChart2 size={20} className="mr-3" /> Sales
                 </a>
                 <div>
-                    <button onClick={() => setIsProductsOpen(!isProductsOpen)} className="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
-                        <div className="flex items-center">
-                            <ShoppingBag size={20} className="mr-3" /> Products
+                    <Link href="/admin/products">
+                        <div onClick={() => setIsProductsOpen(!isProductsOpen)} className="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors cursor-pointer">
+                            <div className="flex items-center">
+                                <ShoppingBag size={20} className="mr-3" /> Products
+                            </div>
+                            <ChevronDown size={18} className={`transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
                         </div>
-                        <ChevronDown size={18} className={`transition-transform ${isProductsOpen ? 'rotate-180' : ''}`} />
-                    </button>
+                    </Link>
                     {isProductsOpen && (
                         <div className="pl-4 mt-2 space-y-1 border-l border-gray-700 ml-5 max-h-[calc(100vh-400px)] overflow-y-auto hide-scrollbar">
                             <a href="#" onClick={(e) => { e.preventDefault(); onSelectCategory(null); }}
