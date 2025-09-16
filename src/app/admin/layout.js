@@ -51,7 +51,7 @@ const Sidebar = () => {
                 <Link href="/admin/reports" className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isActive('/admin/reports') ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}>
                     <FileText size={20} className="mr-3" /> Reports
                 </Link>
-                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                <a href="/admin/transactions" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
                     <BarChart2 size={20} className="mr-3" /> Transactions
                 </a>
                 <div>
