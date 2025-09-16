@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
   LayoutDashboard, BarChart2, ShoppingBag, Users, Settings, LogOut,
@@ -10,22 +10,24 @@ import {
 } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
 
-const SubCategory = ({ category, onSelectCategory, selectedCategory, level }) => (
+const SubCategory = ({ category, selectedCategory, level }) => (
     <div style={{ marginLeft: `${level * 10}px` }}>
-        <a href="#" onClick={(e) => { e.preventDefault(); onSelectCategory(category.id); }}
-           className={`block text-sm py-1.5 px-2 rounded-md ${selectedCategory === category.id ? 'bg-gray-600 font-semibold' : 'hover:bg-gray-700'}`}>
+        <Link href={`/admin/products?categoryId=${category.id}`}
+           className={`block text-sm py-1.5 px-2 rounded-md ${selectedCategory == category.id ? 'bg-gray-600 font-semibold' : 'hover:bg-gray-700'}`}>
             {category.name}
-        </a>
+        </Link>
         {category.children && category.children.map(child => (
-            <SubCategory key={child.id} category={child} onSelectCategory={onSelectCategory} selectedCategory={selectedCategory} level={level + 1} />
+            <SubCategory key={child.id} category={child} selectedCategory={selectedCategory} level={level + 1} />
         ))}
     </div>
 );
 
-const Sidebar = ({ onSelectCategory, selectedCategory }) => {
+const Sidebar = () => {
     const [categories, setCategories] = useState([]);
     const [isProductsOpen, setIsProductsOpen] = useState(true);
     const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const selectedCategory = searchParams.get('categoryId');
 
     useEffect(() => {
         const getCategories = async () => {
@@ -50,7 +52,7 @@ const Sidebar = ({ onSelectCategory, selectedCategory }) => {
                     <FileText size={20} className="mr-3" /> Reports
                 </Link>
                 <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
-                    <BarChart2 size={20} className="mr-3" /> Sales
+                    <BarChart2 size={20} className="mr-3" /> Transactions
                 </a>
                 <div>
                     <Link href="/admin/products">
@@ -63,15 +65,15 @@ const Sidebar = ({ onSelectCategory, selectedCategory }) => {
                     </Link>
                     {isProductsOpen && (
                         <div className="pl-4 mt-2 space-y-1 border-l border-gray-700 ml-5 max-h-[calc(100vh-400px)] overflow-y-auto hide-scrollbar">
-                            <a href="#" onClick={(e) => { e.preventDefault(); onSelectCategory(null); }}
+                            <Link href="/admin/products"
                                className={`flex justify-between items-center text-sm py-2 px-2 rounded-md ${!selectedCategory ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
                                 Show All
-                            </a>
+                            </Link>
                             {categories.map(mainCat => (
                                 <div key={mainCat.id} className="pt-2">
                                     <h4 className="font-bold text-gray-300 uppercase text-xs tracking-wider px-2">{mainCat.name}</h4>
                                     {mainCat.children.map(subCat => (
-                                        <SubCategory key={subCat.id} category={subCat} onSelectCategory={onSelectCategory} selectedCategory={selectedCategory} level={1} />
+                                        <SubCategory key={subCat.id} category={subCat} selectedCategory={selectedCategory} level={1} />
                                     ))}
                                 </div>
                             ))}
@@ -94,18 +96,46 @@ const Sidebar = ({ onSelectCategory, selectedCategory }) => {
     );
 };
 
-const Header = ({ onSearchChange }) => {
+// ✅ FIX: The Header now manages search logic itself
+const Header = () => {
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    
+    // Use local state for the input to provide a smooth typing experience
+    const [inputValue, setInputValue] = useState(searchParams.get('q') || '');
+
+    // Sync input value if user navigates with browser back/forward buttons
+    useEffect(() => {
+        setInputValue(searchParams.get('q') || '');
+    }, [searchParams]);
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        const newParams = new URLSearchParams(searchParams);
+        const trimmedValue = inputValue.trim();
+
+        if (trimmedValue) {
+            newParams.set('q', trimmedValue);
+        } else {
+            newParams.delete('q');
+        }
+        
+        // Navigate to the products page with the new search query, preserving other params
+        router.push(`/admin/products?${newParams.toString()}`);
+    };
+
     return (
         <header className="flex justify-between items-center py-4 flex-wrap gap-4">
-            <div className="relative w-full max-w-xs">
+            <form onSubmit={handleSearch} className="relative w-full max-w-xs">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <input
                     type="text"
                     placeholder="Search..."
-                    onChange={onSearchChange}
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                     className="w-full bg-white py-2 pl-10 pr-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-            </div>
+            </form>
             <div className="flex items-center gap-6">
                 <div className="relative flex items-center gap-2 text-gray-600">
                     <Bell size={20} />
@@ -130,9 +160,7 @@ const GlobalStyles = () => (
 export default function AdminLayout({ children }) {
     const { status } = useSession();
     const router = useRouter();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState(null);
-
+    
     useEffect(() => {
         if (status === 'unauthenticated') {
             router.push('/login');
@@ -143,26 +171,18 @@ export default function AdminLayout({ children }) {
         return <div className="flex justify-center items-center h-screen">Loading...</div>;
     }
 
-    const childrenWithProps = React.Children.map(children, child => {
-        if (React.isValidElement(child)) {
-            return React.cloneElement(child, { searchQuery, selectedCategory });
-        }
-        return child;
-    });
-
     return (
         <div className="bg-gray-50 font-sans min-h-screen">
             <GlobalStyles />
-            <Sidebar 
-                selectedCategory={selectedCategory} 
-                onSelectCategory={setSelectedCategory} 
-            />
-            <main className="flex-1 p-4 sm:p-8 ml-0 lg:ml-64">
-                <Header 
-                    onSearchChange={(e) => setSearchQuery(e.target.value)}
-                />
-                {childrenWithProps}
-            </main>
+            {/* ✅ FIX: Wrap in Suspense because Sidebar/Header use searchParams */}
+            <Suspense>
+                <Sidebar />
+                <main className="flex-1 p-4 sm:p-8 ml-0 lg:ml-64">
+                    <Header />
+                    {/* ✅ FIX: No longer need to cloneElement to pass props */}
+                    {children}
+                </main>
+            </Suspense>
         </div>
     );
 }
