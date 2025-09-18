@@ -36,6 +36,7 @@ export const fetchAdminProducts = async () => {
     
     const apiResponse = await response.json();
     
+    // Add mock stats for display until backend provides them
     return apiResponse.payload.map(p => ({
         ...p,
         sell: Math.floor(Math.random() * 150),

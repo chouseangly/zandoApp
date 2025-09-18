@@ -1,3 +1,4 @@
+// ... (imports remain the same)
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
 
+// ... (SubCategory component remains the same)
 const SubCategory = ({ category, selectedCategory, level }) => (
     <div style={{ marginLeft: `${level * 10}px` }}>
         <Link href={`/admin/products?categoryId=${category.id}`}
@@ -23,6 +25,7 @@ const SubCategory = ({ category, selectedCategory, level }) => (
 );
 
 const Sidebar = () => {
+    // ... (state and useEffects remain the same)
     const [categories, setCategories] = useState([]);
     const [isProductsOpen, setIsProductsOpen] = useState(true);
     const pathname = usePathname();
@@ -51,9 +54,9 @@ const Sidebar = () => {
                 <Link href="/admin/reports" className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isActive('/admin/reports') ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}>
                     <FileText size={20} className="mr-3" /> Reports
                 </Link>
-                <a href="/admin/transactions" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                <Link href="/admin/transactions" className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isActive('/admin/transactions') ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}>
                     <BarChart2 size={20} className="mr-3" /> Transactions
-                </a>
+                </Link>
                 <div>
                     <Link href="/admin/products">
                         <div onClick={() => setIsProductsOpen(!isProductsOpen)} className="w-full flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors cursor-pointer">
@@ -64,6 +67,7 @@ const Sidebar = () => {
                         </div>
                     </Link>
                     {isProductsOpen && (
+                        // ... (product subcategories logic remains the same)
                         <div className="pl-4 mt-2 space-y-1 border-l border-gray-700 ml-5 max-h-[calc(100vh-400px)] overflow-y-auto hide-scrollbar">
                             <Link href="/admin/products"
                                className={`flex justify-between items-center text-sm py-2 px-2 rounded-md ${!selectedCategory ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
@@ -80,12 +84,13 @@ const Sidebar = () => {
                         </div>
                     )}
                 </div>
-                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                {/* MODIFICATION: Add Customers link here */}
+                <Link href="/admin/customers" className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isActive('/admin/customers') ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}>
                     <Users size={20} className="mr-3" /> Customers
-                </a>
+                </Link>
             </nav>
             <div className="px-4 py-6 border-t border-gray-800 space-y-2">
-                <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
+                 <a href="#" className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
                     <Settings size={20} className="mr-3" /> Settings
                 </a>
                 <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full text-left flex items-center px-4 py-2 rounded-lg hover:bg-gray-700 hover:text-white transition-colors">
@@ -96,7 +101,8 @@ const Sidebar = () => {
     );
 };
 
-// ✅ FIX: The Header now manages search logic itself
+
+// ... (Header, GlobalStyles, and AdminLayout components remain the same)
 const Header = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -174,12 +180,10 @@ export default function AdminLayout({ children }) {
     return (
         <div className="bg-gray-50 font-sans min-h-screen">
             <GlobalStyles />
-            {/* ✅ FIX: Wrap in Suspense because Sidebar/Header use searchParams */}
             <Suspense>
                 <Sidebar />
                 <main className="flex-1 p-4 sm:p-8 ml-0 lg:ml-64">
                     <Header />
-                    {/* ✅ FIX: No longer need to cloneElement to pass props */}
                     {children}
                 </main>
             </Suspense>

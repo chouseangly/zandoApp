@@ -1,191 +1,118 @@
 // src/services/transaction.service.js
 
-import { format, subDays, startOfMonth, endOfMonth, parseISO } from 'date-fns';
+import { format, parseISO, isValid } from 'date-fns';
+import { getSession } from "next-auth/react";
 
-const mockTransactions = [
-    {
-        id: '14098',
-        orderType: 'Express Shipping',
-        productImage: '/images/smartwatch.png', // Ensure you have this image or replace
-        productName: 'Smartwatch E2 Black',
-        additionalProducts: 1,
-        price: 183.00,
-        status: 'Cancelled',
-        orderDate: '2023-09-26',
-        customerName: 'Ralph Edwards',
-        paymentMethod: 'Visa',
-    },
-    {
-        id: '14097',
-        orderType: 'Standard Shipping',
-        productImage: '/images/sneakers.png', // Ensure you have this image or replace
-        productName: 'Sneakers Pro X',
-        additionalProducts: 0,
-        price: 375.00,
-        status: 'Delivered',
-        orderDate: '2023-09-26',
-        customerName: 'Marilyn Mondrong', // Your name from the image!
-        paymentMethod: 'Mastercard',
-    },
-    {
-        id: '14096',
-        orderType: 'Flat Shipping',
-        productImage: '/images/headphones.png', // Ensure you have this image or replace
-        productName: 'Headphone G1 Pro Wired',
-        additionalProducts: 2,
-        price: 332.00,
-        status: 'Pending',
-        orderDate: '2023-09-24',
-        customerName: 'Cameron Williamson',
-        paymentMethod: 'Mastercard',
-    },
-    {
-        id: '14095',
-        orderType: 'Expedited',
-        productImage: '/images/smartphone.png', // Ensure you have this image or replace
-        productName: 'Smartphone X2 Ultra',
-        additionalProducts: 1,
-        price: 286.00,
-        status: 'Delivered',
-        orderDate: '2023-09-24',
-        customerName: 'Kathryn Murphy',
-        paymentMethod: 'Ethereum',
-    },
-    {
-        id: '14093',
-        orderType: 'Express Shipping',
-        productImage: '/images/laptop.png', // Ensure you have this image or replace
-        productName: 'Iphone XR Black 128 GB',
-        additionalProducts: 0,
-        price: 328.00,
-        status: 'Delivered',
-        orderDate: '2023-09-22',
-        customerName: 'William Howard',
-        paymentMethod: 'Visa',
-    },
-    {
-        id: '14094',
-        orderType: 'Cargo Shipping',
-        productImage: '/images/keyboard.png', // Ensure you have this image or replace
-        productName: 'Logitech MX Master II',
-        additionalProducts: 1,
-        price: 249.00,
-        status: 'Delivered',
-        orderDate: '2023-09-22',
-        customerName: 'Jacob Jones',
-        paymentMethod: 'Bitcoin',
-    },
-    {
-        id: '14092',
-        orderType: 'Standard Shipping',
-        productImage: '/images/tablet.png', // Ensure you have this image or replace
-        productName: 'Samsung Galaxy Tab A7 Lite',
-        additionalProducts: 0,
-        price: 150.00,
-        status: 'Processing',
-        orderDate: '2023-09-20',
-        customerName: 'Leslie Alexander',
-        paymentMethod: 'Visa',
-    },
-    {
-        id: '14091',
-        orderType: 'Express Shipping',
-        productImage: '/images/camera.png', // Ensure you have this image or replace
-        productName: 'Sony Alpha a6000 Mirrorless',
-        additionalProducts: 0,
-        price: 599.00,
-        status: 'Shipped',
-        orderDate: '2023-09-18',
-        customerName: 'Eleanor Pena',
-        paymentMethod: 'Mastercard',
-    },
-    {
-        id: '14090',
-        orderType: 'Flat Shipping',
-        productImage: '/images/drone.png', // Ensure you have this image or replace
-        productName: 'DJI Mini 2 Drone',
-        additionalProducts: 0,
-        price: 449.00,
-        status: 'Delivered',
-        orderDate: '2023-09-15',
-        customerName: 'Guy Hawkins',
-        paymentMethod: 'PayPal',
-    },
-    {
-        id: '14089',
-        orderType: 'Standard Shipping',
-        productImage: '/images/watch.png', // Ensure you have this image or replace
-        productName: 'Fitbit Charge 5',
-        additionalProducts: 0,
-        price: 149.00,
-        status: 'Pending',
-        orderDate: '2023-09-12',
-        customerName: 'Annette Black',
-        paymentMethod: 'Visa',
-    },
-];
+// The base URL of your Spring Boot backend API
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
 
-// Ensure you have these placeholder images in your public folder or update paths:
-// public/images/smartwatch.png
-// public/images/sneakers.png
-// public/images/headphones.png
-// public/images/smartphone.png
-// public/images/laptop.png
-// public/images/keyboard.png
-// public/images/tablet.png
-// public/images/camera.png
-// public/images/drone.png
-// public/images/watch.png
+/**
+ * This helper function transforms the detailed data from your backend
+ * into the simpler structure that your frontend components expect.
+ */
+const structureTransactionData = (backendTransaction) => {
+    // The main product to display on the card is the first item in the transaction
+    const primaryItem = backendTransaction.items?.[0];
+    const product = primaryItem?.product;
 
+    return {
+        id: backendTransaction.id,
+        orderType: 'Standard Shipping', // This can be added to your backend model later if needed
+        // ✅ FIX: Changed `product?.gallery` to `product?.variants` to match the backend response
+        productImage: product?.variants?.[0]?.images?.[0] || '/images/placeholder.png',
+        productName: product?.name || 'Product Not Found',
+        additionalProducts: backendTransaction.items.length - 1,
+        price: backendTransaction.totalAmount,
+        status: backendTransaction.status,
+        orderDate: backendTransaction.orderDate ? format(parseISO(backendTransaction.orderDate), 'yyyy-MM-dd') : null,
+        customerName: backendTransaction.user?.userName || 'N/A', // Uses the user object from the backend
+        paymentMethod: backendTransaction.paymentMethod,
+    };
+};
 
+/**
+ * Fetches all transactions from your backend and applies client-side filtering.
+ */
 export async function fetchTransactions(filters = {}) {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+    const session = await getSession();
 
-    let filtered = [...mockTransactions];
-
-    if (filters.search) {
-        const searchTerm = filters.search.toLowerCase();
-        filtered = filtered.filter(t => 
-            t.productName.toLowerCase().includes(searchTerm) ||
-            t.customerName.toLowerCase().includes(searchTerm) ||
-            t.id.includes(searchTerm)
-        );
+    if (!session?.user?.token) {
+        console.error("Authentication token not found.");
+        return []; // Return empty if not authenticated
     }
 
-    if (filters.status && filters.status !== 'All Status') {
-        filtered = filtered.filter(t => t.status === filters.status);
-    }
-
-    if (filters.dateRange) {
-        const { from, to } = filters.dateRange;
-        const fromDate = from ? parseISO(format(from, 'yyyy-MM-dd')) : null;
-        const toDate = to ? parseISO(format(to, 'yyyy-MM-dd')) : null;
-        
-        filtered = filtered.filter(t => {
-            const orderDate = parseISO(t.orderDate);
-            let match = true;
-            if (fromDate && orderDate < fromDate) match = false;
-            if (toDate && orderDate > toDate) match = false;
-            return match;
+    try {
+        // Note: Your backend doesn't have filtering yet, so we fetch all and filter on the client.
+        const response = await fetch(`${API_BASE_URL}/transactions`, {
+            headers: {
+                'Authorization': `Bearer ${session.user.token}`
+            }
         });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const apiResponse = await response.json();
+        const backendTransactions = apiResponse.payload || [];
+
+        // 1. Map the backend data to the structure your frontend components expect
+        const structuredData = backendTransactions.map(structureTransactionData);
+        
+        // 2. Apply filtering on the client-side
+        let filtered = structuredData;
+        if (filters.search) {
+             const searchTerm = filters.search.toLowerCase();
+             filtered = filtered.filter(t => 
+                t.productName.toLowerCase().includes(searchTerm) || 
+                t.customerName.toLowerCase().includes(searchTerm) ||
+                String(t.id).includes(searchTerm)
+             );
+        }
+        if (filters.status && filters.status !== 'All Status') {
+            filtered = filtered.filter(t => t.status === filters.status);
+        }
+        if (filters.dateRange?.from) {
+            const fromDate = format(filters.dateRange.from, 'yyyy-MM-dd');
+            filtered = filtered.filter(t => t.orderDate && t.orderDate >= fromDate);
+        }
+
+        return filtered;
+
+    } catch (error) {
+        console.error("Failed to fetch transactions:", error);
+        return []; // Return an empty array on error
     }
-
-    // Sort by most recent for display consistency
-    filtered.sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-
-    return filtered;
 }
 
-// You might also need a function to get transaction counts by status for the filters
+/**
+ * Fetches all transactions and calculates the count for each status tab.
+ */
 export async function fetchTransactionStatusCounts() {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const counts = mockTransactions.reduce((acc, t) => {
-        acc[t.status] = (acc[t.status] || 0) + 1;
-        return acc;
-    }, {});
-    
-    // Add 'All Status' count
-    counts['All Status'] = mockTransactions.length;
+    const session = await getSession();
+    if (!session?.user?.token) return { 'All Status': 0 };
 
-    return counts;
+     try {
+        const response = await fetch(`${API_BASE_URL}/transactions`, {
+            headers: {
+                'Authorization': `Bearer ${session.user.token}`
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch for counts');
+        
+        const apiResponse = await response.json();
+        const transactions = apiResponse.payload || [];
+        
+        const counts = transactions.reduce((acc, t) => {
+            acc[t.status] = (acc[t.status] || 0) + 1;
+            return acc;
+        }, {});
+        
+        counts['All Status'] = transactions.length;
+        return counts;
+
+    } catch (error) {
+        console.error("Failed to fetch transaction counts:", error);
+        return { 'All Status': 0 };
+    }
 }
