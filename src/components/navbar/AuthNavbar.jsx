@@ -21,11 +21,11 @@ const AuthNavbar = () => {
   const t = translations[language];
   const { favorites, cartItems, notifications } = useCart();
   
-  // ✅ This will now update automatically when the context changes
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // ✅ FIX: Corrected the typo from profileMenu_current to profileMenuRef.current
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setProfileMenuOpen(false);
       }
@@ -72,7 +72,6 @@ const AuthNavbar = () => {
             </div>
 
             <div className="flex items-center space-x-5">
-              {/* ✅ This is now a simple Link to the notifications page */}
               <Link href="/notifications" className="relative">
                   <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white cursor-pointer" />
                   {unreadCount > 0 && (

@@ -15,7 +15,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         discountPercent: '',
         isAvailable: true,
         categoryIds: [],
-        variants: [{ color: '', sizes: '', imageCount: 0, files: [], previews: [] }]
+        variants: [{ color: '', sizes: '',quantity: 0, imageCount: 0, files: [], previews: [] }]
     });
     const [allCategories, setAllCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(false); // ✅ **FIX: Add isLoading state**
@@ -58,13 +58,12 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         newVariants[index].previews = files.map(file => URL.createObjectURL(file));
         setFormData(prev => ({ ...prev, variants: newVariants }));
     };
-
     const addVariant = () => {
-        setFormData(prev => ({
-            ...prev,
-            variants: [...prev.variants, { color: '', sizes: '', imageCount: 0, files: [], previews: [] }]
-        }));
-    };
+            setFormData(prev => ({
+                ...prev,
+                variants: [...prev.variants, { color: '', sizes: '', quantity: 0, imageCount: 0, files: [], previews: [] }]
+            }));
+        };
 
     const removeVariant = (index) => {
         const newVariants = formData.variants.filter((_, i) => i !== index);
@@ -186,6 +185,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <input value={variant.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} placeholder="Color (e.g., Blue)" className="w-full p-2 border rounded mb-2" required />
+                                          <input type="number" value={variant.quantity} onChange={e => handleVariantChange(index, 'quantity', e.target.value)} placeholder="Quantity" className="w-full p-2 border rounded mb-2" required />
                                         <input value={variant.sizes} onChange={e => handleVariantChange(index, 'sizes', e.target.value)} placeholder="Sizes (comma-separated, e.g., S,M,L)" className="w-full p-2 border rounded" />
                                     </div>
                                     <div>

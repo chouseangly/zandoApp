@@ -71,10 +71,10 @@ const NotificationItem = ({ item, onNotificationClick }) => (
     <div
         onClick={() => onNotificationClick(item.id)}
         className={`group relative flex cursor-pointer items-start gap-4 rounded-2xl p-4 transition-all duration-200 ${
-            !item.is_read ? "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100/60 dark:hover:bg-blue-900/30" : "bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+            !item.isRead ? "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100/60 dark:hover:bg-blue-900/30" : "bg-white dark:bg-gray-800/50 hover:bg-gray-50 dark:hover:bg-gray-700/50"
         }`}
     >
-        {!item.is_read && <div className="absolute left-1.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-blue-500"></div>}
+        {!item.isRead && <div className="absolute left-1.5 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-blue-500"></div>}
         
         <div className="flex-shrink-0 w-11 h-11 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
             {getNotificationIcon(item.title)}
@@ -122,39 +122,37 @@ const NoNotificationsMessage = ({ activeTab }) => (
 
 export default function NotificationsPage() {
     const { data: session } = useSession();
-    // ✅ GET notifications and the setter from the shared context
     const { notifications, setNotifications } = useCart();
     const [activeTab, setActiveTab] = useState("all");
     
     const handleNotificationClick = async (notificationId) => {
         const notification = notifications.find((n) => n.id === notificationId);
-        // Only proceed if the notification exists and is unread
-        if (!notification || !notification.is_read === false) return;
+        // ✅ FIX: Changed property to 'isRead'
+        if (!notification || notification.isRead) return;
 
-        // Immediately update the UI for a fast user experience
         const originalNotifications = [...notifications];
+        // ✅ FIX: Changed property to 'isRead' for optimistic update
         setNotifications(prev =>
-            prev.map(n => (n.id === notificationId ? { ...n, is_read: true } : n))
+            prev.map(n => (n.id === notificationId ? { ...n, isRead: true } : n))
         );
         
-        // Then, make the API call to update the backend
         try {
             if (!session?.user?.id) throw new Error("User not authenticated");
             await markNotificationAsRead(notificationId, session.user.id);
         } catch (error) {
             console.error("Failed to mark notification as read:", error);
-            // If the API call fails, revert the UI change
             setNotifications(originalNotifications);
         }
     };
     
-    // Sort notifications so the newest are always at the top
     const sortedNotifications = [...notifications].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     
-    const unreadCount = sortedNotifications.filter(n => !n.is_read).length;
+    // ✅ FIX: Changed property to 'isRead'
+    const unreadCount = sortedNotifications.filter(n => !n.isRead).length;
 
+    // ✅ FIX: Changed property to 'isRead'
     const filteredNotifications = sortedNotifications.filter(n =>
-        activeTab === "all" ? true : !n.is_read
+        activeTab === "all" ? true : !n.isRead
     );
 
     const { today, lastWeek, older } = categorizeByTime(filteredNotifications);

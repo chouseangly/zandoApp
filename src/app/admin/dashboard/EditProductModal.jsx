@@ -42,7 +42,8 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                 categoryIds: product.categories.map(c => c.id),
                 variants: product.gallery.map(g => ({
                     ...g,
-                    imageCount: g.images.length,
+                    sizes: Array.isArray(g.sizes) ? g.sizes.join(',') : '',
+                    quantity: g.quantity || 0,
                     files: [],
                     previews: g.images
                 })) || []
@@ -80,11 +81,11 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
     };
 
     const addVariant = () => {
-        setFormData(prev => ({
-            ...prev,
-            variants: [...prev.variants, { color: '', sizes: [], imageCount: 0, files: [], previews: [] }]
-        }));
-    };
+            setFormData(prev => ({
+                ...prev,
+                variants: [...prev.variants, { color: '', sizes: '', quantity: 0, files: [], previews: [] }]
+            }));
+        };
 
     const removeVariant = (index) => {
         const newVariants = formData.variants.filter((_, i) => i !== index);
@@ -217,6 +218,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <input value={variant.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} placeholder="Color (e.g., Blue)" className="w-full p-2 border rounded mb-2" />
+                                         <input type="number" value={variant.quantity} onChange={e => handleVariantChange(index, 'quantity', e.target.value)} placeholder="Quantity" className="w-full p-2 border rounded mb-2" />
                                         <input value={Array.isArray(variant.sizes) ? variant.sizes.join(',') : variant.sizes} onChange={e => handleVariantChange(index, 'sizes', e.target.value)} placeholder="Sizes (comma-separated, e.g., S,M,L)" className="w-full p-2 border rounded mb-2" />
                                     </div>
                                     <div>
