@@ -1,22 +1,33 @@
 "use client";
 
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
+import { useCart } from '@/context/CartContext'; // ✅ IMPORT USECART HOOK
 
-const HeartIcon = () => (
+const HeartIcon = ({ isFavorite }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" 
-    viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+    viewBox="0 0 24 24" 
+    // ✅ DYNAMICALLY FILL ICON
+    fill={isFavorite ? "currentColor" : "none"} 
+    stroke="currentColor" 
     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
-    className="text-gray-400 group-hover:text-red-500 transition-colors">
+    // ✅ DYNAMICALLY COLOR ICON
+    className={`transition-colors ${isFavorite ? 'text-red-500' : 'text-gray-400 group-hover:text-red-500'}`}>
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
   </svg>
 );
 
 const ProductCard = ({ product }) => {
-  // FIX: Use the first image from the first variant in the gallery as the display image.
-  // This provides a fallback if the gallery or images are missing.
+  // ✅ GET CONTEXT AND CHECK IF PRODUCT IS FAVORITE
+  const { addFavorite, favorites } = useCart();
+  const isFavorite = favorites.some(fav => fav.productId === product.id);
+
   const imageUrl = product.gallery?.[0]?.images?.[0] || "https://placehold.co/400x500/cccccc/ffffff?text=No+Image";
+
+  const handleFavoriteClick = (e) => {
+    e.preventDefault(); // Prevents link navigation
+    addFavorite(product.id);
+  };
 
   return (
     <Link href={`/product/${product.id}`} passHref>
@@ -41,18 +52,12 @@ const ProductCard = ({ product }) => {
         <div className="p-3 md:p-4">
           <div className="flex justify-between items-start">
             <h3 className="font-semibold text-gray-700 text-sm md:text-base mb-1 pr-2">{product.name}</h3>
-            <button 
-              onClick={(e) => {
-                e.preventDefault(); // Prevents link navigation
-                console.log(`Product ${product.id} added to wishlist`);
-              }} 
-              className="flex-shrink-0 z-10"
-            >
-              <HeartIcon />
+            {/* ✅ UPDATE ONCLICK HANDLER */}
+            <button onClick={handleFavoriteClick} className="flex-shrink-0 z-10">
+              <HeartIcon isFavorite={isFavorite} />
             </button>
           </div>
           <div className="flex items-baseline">
-            {/* FIX: Use the 'price' and 'originalPrice' fields from the backend response */}
             <p className="font-bold text-gray-800 text-sm md:text-base">${product.price.toFixed(2)}</p>
             {product.originalPrice && (
               <p className="text-xs text-gray-500 line-through ml-2">${product.originalPrice.toFixed(2)}</p>

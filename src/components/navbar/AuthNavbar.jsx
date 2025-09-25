@@ -9,6 +9,7 @@ import MegaMenu from './MegaMenu';
 import ProfileMenu from './ProfileMenu';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/lib/translations';
+import { useCart } from '@/context/CartContext'; // ✅ IMPORT USECART HOOK
 
 const AuthNavbar = () => {
   const [categories, setCategories] = useState([]);
@@ -18,6 +19,7 @@ const AuthNavbar = () => {
   const profileMenuRef = useRef(null);
   const { language } = useLanguage();
   const t = translations[language];
+  const { favorites, cartItems } = useCart(); // ✅ GET LIVE DATA FROM CONTEXT
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,7 +49,7 @@ const AuthNavbar = () => {
           <nav className="hidden md:flex items-center space-x-4 lg:space-x-10">
             {categories.map((cat) => (
               <div key={cat.id} onMouseEnter={() => setHoveredCategory(cat)} className="py-4">
-                <Link href="/" className="text-lg font-bold text-gray-800 dark:text-gray-200 transition-colors">
+                <Link href={`/category/${cat.id}`} className="text-lg font-bold text-gray-800 dark:text-gray-200 transition-colors">
                   {cat.name}
                 </Link>
               </div>
@@ -68,10 +70,19 @@ const AuthNavbar = () => {
 
             <div className="flex items-center space-x-5">
               <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white cursor-pointer" />
-              <Heart className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white cursor-pointer" />
+              {/* ✅ UPDATE FAVORITES ICON & COUNT */}
+              <Link href="/favorites" className="relative cursor-pointer">
+                <Heart className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white" />
+                {favorites.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{favorites.length}</span>
+                )}
+              </Link>
+              {/* ✅ UPDATE SHOPPING CART ICON & COUNT */}
               <div className="relative cursor-pointer">
                 <ShoppingBag className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white" />
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">0</span>
+                {cartItems.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{cartItems.length}</span>
+                )}
               </div>
             </div>
             

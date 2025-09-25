@@ -3,6 +3,8 @@ import "./globals.css";
 import SessionWrapper from "@/components/SessionWrapper";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { CartProvider } from "@/context/CartContext"; // ✅ IMPORT THE NEW PROVIDER
+import { Toaster } from 'react-hot-toast'; // ✅ IMPORT TOASTER
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -25,7 +27,10 @@ export default function RootLayout({ children }) {
         <SessionWrapper>
           <ThemeProvider>
             <LanguageProvider>
-              {children}
+              <CartProvider>
+                {children}
+                <Toaster position="bottom-right" />
+              </CartProvider>
             </LanguageProvider>
           </ThemeProvider>
         </SessionWrapper>
