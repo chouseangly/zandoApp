@@ -19,12 +19,12 @@ export const fetchNotifications = async (userId) => {
     }
 };
 
-export const markNotificationAsRead = async (notificationId, userId) => {
+export const markNotificationAsRead = async (id, userId) => {
     const session = await getSession();
     if (!session?.user?.token) return false;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read?userId=${userId}`, {
+        const response = await fetch(`${API_BASE_URL}/notifications/${id}/read?userId=${userId}`, {
             method: 'PUT',
             headers: { 'Authorization': `Bearer ${session.user.token}` }
         });
