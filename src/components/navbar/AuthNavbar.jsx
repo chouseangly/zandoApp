@@ -9,22 +9,30 @@ import MegaMenu from './MegaMenu';
 import ProfileMenu from './ProfileMenu';
 import { useLanguage } from '@/context/LanguageContext';
 import { translations } from '@/lib/translations';
-import { useCart } from '@/context/CartContext'; // ✅ IMPORT USECART HOOK
+import { useCart } from '@/context/CartContext';
+import NotificationPanel from '@/app/(main)/notifications/page';
 
 const AuthNavbar = () => {
   const [categories, setCategories] = useState([]);
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [isProfileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isNotificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const { data: session, status } = useSession();
   const profileMenuRef = useRef(null);
+  const notificationPanelRef = useRef(null);
   const { language } = useLanguage();
   const t = translations[language];
-  const { favorites, cartItems } = useCart(); // ✅ GET LIVE DATA FROM CONTEXT
+  const { favorites, cartItems, notifications } = useCart();
+  
+  const unreadCount = notifications.filter(n => !n.is_read).length;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setProfileMenuOpen(false);
+      }
+      if (notificationPanelRef.current && !notificationPanelRef.current.contains(event.target)) {
+        setNotificationPanelOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -69,15 +77,24 @@ const AuthNavbar = () => {
             </div>
 
             <div className="flex items-center space-x-5">
-              <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white cursor-pointer" />
-              {/* ✅ UPDATE FAVORITES ICON & COUNT */}
+              <Link href="/notifications" className="relative">
+        
+                  <button onClick={() => setNotificationPanelOpen(prev => !prev)} className="relative">
+                      <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white cursor-pointer" />
+                      {unreadCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{unreadCount}</span>
+                      )}
+                  </button>
+                  {isNotificationPanelOpen && <NotificationPanel onClose={() => setNotificationPanelOpen(false)} />}
+          
+              </Link>
+              
               <Link href="/favorites" className="relative cursor-pointer">
                 <Heart className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white" />
                 {favorites.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{favorites.length}</span>
                 )}
               </Link>
-              {/* ✅ UPDATE SHOPPING CART ICON & COUNT */}
               <div className="relative cursor-pointer">
                 <ShoppingBag className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white" />
                 {cartItems.length > 0 && (
