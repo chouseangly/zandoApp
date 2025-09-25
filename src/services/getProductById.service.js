@@ -34,4 +34,18 @@ export const fetchAllProducts = async () => {
     console.error("Failed to fetch products:", error);
     return []; // Return an empty array on error
   }
+
+};
+
+export const trackProductView = async (productId) => {
+  try {
+    // This sends a request to your new backend endpoint.
+    // We don't need to do anything with the response.
+    await fetch(`http://localhost:8080/api/v1/products/${productId}/view`, {
+      method: 'POST',
+    });
+  } catch (error) {
+    // It's okay if this fails, so we just log the error.
+    console.error("Failed to track product view:", error);
+  }
 };

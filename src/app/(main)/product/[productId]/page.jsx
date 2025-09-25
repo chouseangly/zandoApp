@@ -3,7 +3,7 @@
 // ✅ 1. IMPORT useParams
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { fetchProductById } from '@/services/getProductById.service';
+import { fetchProductById, trackProductView } from '@/services/getProductById.service';
 import ProductInfo from '@/components/product/ProductInfo';
 
 // --- Helper Icons ---
@@ -43,6 +43,8 @@ const ProductDetailPage = () => {
                 }
             };
             getProduct();
+            // Track product view
+            trackProductView(productId);
         }
     }, [productId]);
 

@@ -1,3 +1,5 @@
+// chouseangly/zandoapp/zandoApp-main/src/app/admin/dashboard/ProductClient.jsx
+
 "use client"
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -24,20 +26,17 @@ const ProductClient = ({ searchQuery, selectedCategory }) => {
     const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState(null);
 
-    const addMockStats = (product) => ({
-      ...product,
-      sell: Math.floor(Math.random() * 150),
-      view: Math.floor(Math.random() * 15000),
-      earning: product.price * Math.floor(Math.random() * 100),
-    });
+    // ✅ REMOVED: The mock data function is gone!
+    // const addMockStats = (product) => ({ ... });
 
     const loadProducts = useCallback(async () => {
         setLoading(true);
         let fetchedProducts = [];
         if (selectedCategory) {
-            const productsByCategory = await fetchProductsByCategoryId(selectedCategory);
-            fetchedProducts = productsByCategory.map(addMockStats);
+            // ✅ FIXED: Directly use the API response
+            fetchedProducts = await fetchProductsByCategoryId(selectedCategory);
         } else {
+            // ✅ FIXED: Directly use the API response
             fetchedProducts = await fetchAdminProducts();
         }
         setProducts(fetchedProducts);
@@ -48,7 +47,6 @@ const ProductClient = ({ searchQuery, selectedCategory }) => {
         loadProducts();
     }, [loadProducts]);
     
-    // ✅ FIX: This memoized value will re-calculate whenever `products` or `searchQuery` change.
     const filteredProducts = useMemo(() => {
         if (!searchQuery) {
             return products;
@@ -75,6 +73,7 @@ const ProductClient = ({ searchQuery, selectedCategory }) => {
     return (
         <>
             <div className="bg-white p-6 rounded-xl shadow-md">
+                {/* ... (header JSX is unchanged) ... */}
                 <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
                     <h2 className="text-xl font-bold text-gray-800">Products</h2>
                     <div className="flex items-center gap-4">
@@ -89,6 +88,7 @@ const ProductClient = ({ searchQuery, selectedCategory }) => {
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full">
+                        {/* ... (table head is unchanged) ... */}
                         <thead>
                             <tr className="border-b border-gray-200">
                                 <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">No</th>
@@ -103,7 +103,6 @@ const ProductClient = ({ searchQuery, selectedCategory }) => {
                             </tr>
                         </thead>
                         <tbody className="bg-white">
-                            {/* Render the filtered list */}
                             {filteredProducts.map((product, index) => (
                                 <tr key={product.id} className="border-b border-gray-200 hover:bg-gray-50">
                                     <td className="px-6 py-4 text-sm font-medium text-gray-500">{index + 1}</td>
@@ -115,7 +114,8 @@ const ProductClient = ({ searchQuery, selectedCategory }) => {
                                     <td className="px-6 py-4 text-sm"><StatusBadge isAvailable={product.isAvailable} /></td>
                                     <td className="px-6 py-4 text-sm text-gray-600">{product.sell}</td>
                                     <td className="px-6 py-4 text-sm text-gray-600">{product.view?.toLocaleString()}</td>
-                                    <td className="px-6 py-4 text-sm font-semibold text-gray-800">${product.earning?.toLocaleString()}</td>
+                                    {/* ✅ FIXED: Format the earning value properly to handle decimals */}
+                                    <td className="px-6 py-4 text-sm font-semibold text-gray-800">${product.earning?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                     <td className="px-6 py-4 text-sm font-medium">
                                         <div className="flex items-center gap-4">
                                             <button onClick={() => handleEdit(product)} className="text-gray-400 hover:text-blue-600"><Edit size={18} /></button>
@@ -129,6 +129,7 @@ const ProductClient = ({ searchQuery, selectedCategory }) => {
                 </div>
             </div>
 
+            {/* ... (Modals are unchanged) ... */}
             <AddProductModal 
                 isOpen={isAddModalOpen} 
                 onClose={() => setAddModalOpen(false)}

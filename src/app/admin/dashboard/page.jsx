@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { DollarSign, ListOrdered, UserCheck } from 'lucide-react';
-import { fetchDashboardStats } from '@/services/dashboard.service';
+// ✅ FIX: Changed the import to use a namespace
+import * as dashboardService from '@/services/dashboard.service';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 // Import necessary charting components from recharts
@@ -11,8 +12,7 @@ import { format, subMonths } from 'date-fns';
 
 
 const RevenueChart = ({ revenue }) => {
-    // ✅ FIX: Generate dynamic chart data instead of using a hardcoded array.
-    // This makes the chart look live and different each time the page loads.
+    // This component remains the same
     const dynamicChartData = useMemo(() => {
         const data = [];
         const today = new Date();
@@ -20,7 +20,6 @@ const RevenueChart = ({ revenue }) => {
             const month = subMonths(today, i);
             data.push({
                 name: format(month, 'MMM'), // e.g., "Jan", "Feb"
-                // Simulate current and previous period revenue with random data
                 current: Math.floor(Math.random() * (5000 - 1500 + 1) + 1500),
                 previous: Math.floor(Math.random() * (4000 - 1000 + 1) + 1000),
             });
@@ -33,7 +32,6 @@ const RevenueChart = ({ revenue }) => {
             <div className="flex justify-between items-center mb-4">
                 <div>
                     <h3 className="text-lg font-bold text-gray-800">Revenue</h3>
-                    {/* ✅ FIX: Use the dynamic revenue prop passed from the main component */}
                     <p className="text-2xl font-bold text-gray-900 mt-1">
                         ${revenue.toLocaleString()}
                         <span className="text-sm font-semibold text-green-500 ml-2">+8.26%</span>
@@ -44,7 +42,6 @@ const RevenueChart = ({ revenue }) => {
                     <p className="text-gray-500">Total Views</p>
                 </div>
             </div>
-            {/* ✅ FIX: Implement a real, responsive chart using Recharts */}
             <div className="h-64 w-full">
                  <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={dynamicChartData} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
@@ -62,6 +59,7 @@ const RevenueChart = ({ revenue }) => {
 };
 
 const StatCard = ({ title, value, change, icon: Icon, iconBgColor }) => (
+    // This component remains the same
     <div className="bg-white p-6 rounded-xl shadow-md flex-1">
         <div className="flex justify-between items-start">
             <div>
@@ -87,7 +85,6 @@ const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Redirect to login if not authenticated
         if (status === 'unauthenticated') {
             router.push('/login');
         }
@@ -95,8 +92,8 @@ const DashboardPage = () => {
         if (status === 'authenticated') {
             const loadDashboardData = async () => {
                 setLoading(true);
-                const fetchedStats = await fetchDashboardStats();
-                // Ensure fetchedStats is not null/undefined before setting state
+                // ✅ FIX: Call the function from the imported module object
+                const fetchedStats = await dashboardService.fetchDashboardStats();
                 if (fetchedStats) {
                     setStats(fetchedStats);
                 }
@@ -113,7 +110,6 @@ const DashboardPage = () => {
     return (
         <div>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 my-8">
-                {/* ✅ FIX: Pass the dynamic totalEarning from state to the chart */}
                 <RevenueChart revenue={stats.totalEarning} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
                     <StatCard
