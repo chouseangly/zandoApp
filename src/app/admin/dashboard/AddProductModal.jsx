@@ -15,10 +15,11 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         discountPercent: '',
         isAvailable: true,
         categoryIds: [],
-        variants: [{ color: '', sizes: '',quantity: 0, imageCount: 0, files: [], previews: [] }]
+        // ✅ FIX: Added 'quantity' to the initial variant state
+        variants: [{ color: '', sizes: '', quantity: 0, imageCount: 0, files: [], previews: [] }]
     });
     const [allCategories, setAllCategories] = useState([]);
-    const [isLoading, setIsLoading] = useState(false); // ✅ **FIX: Add isLoading state**
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const loadCategories = async () => {
@@ -59,11 +60,12 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         setFormData(prev => ({ ...prev, variants: newVariants }));
     };
     const addVariant = () => {
-            setFormData(prev => ({
-                ...prev,
-                variants: [...prev.variants, { color: '', sizes: '', quantity: 0, imageCount: 0, files: [], previews: [] }]
-            }));
-        };
+        setFormData(prev => ({
+            ...prev,
+            // ✅ FIX: Added 'quantity' when adding a new variant
+            variants: [...prev.variants, { color: '', sizes: '', quantity: 0, imageCount: 0, files: [], previews: [] }]
+        }));
+    };
 
     const removeVariant = (index) => {
         const newVariants = formData.variants.filter((_, i) => i !== index);
@@ -72,7 +74,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setIsLoading(true); // ✅ **FIX: Set loading state to true**
+        setIsLoading(true);
         
         const formPayload = new FormData();
         formPayload.append('name', formData.name);
@@ -81,10 +83,12 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         formPayload.append('discountPercent', formData.discountPercent || 0);
         formPayload.append('isAvailable', String(formData.isAvailable));
 
+        // ✅ FIX: Include quantity when preparing data for the API
         const variantsForApi = formData.variants.map(v => ({
             color: v.color,
+            quantity: v.quantity || 0,
             sizes: v.sizes ? v.sizes.split(',').map(s => s.trim()).filter(s => s) : [],
-            imageCount: v.imageCount
+            imageCount: v.files.length 
         }));
         formPayload.append('variants', JSON.stringify(variantsForApi));
         
@@ -119,7 +123,7 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
         } catch (error) {
             console.error("Error adding product:", error);
         } finally {
-            setIsLoading(false); // ✅ **FIX: Set loading state to false**
+            setIsLoading(false);
         }
     };
     
@@ -185,7 +189,8 @@ const AddProductModal = ({ isOpen, onClose, onProductAdded }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <input value={variant.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} placeholder="Color (e.g., Blue)" className="w-full p-2 border rounded mb-2" required />
-                                          <input type="number" value={variant.quantity} onChange={e => handleVariantChange(index, 'quantity', e.target.value)} placeholder="Quantity" className="w-full p-2 border rounded mb-2" required />
+                                        {/* ✅ FIX: Added Quantity input field */}
+                                        <input type="number" value={variant.quantity} onChange={e => handleVariantChange(index, 'quantity', e.target.value)} placeholder="Quantity" className="w-full p-2 border rounded mb-2" required />
                                         <input value={variant.sizes} onChange={e => handleVariantChange(index, 'sizes', e.target.value)} placeholder="Sizes (comma-separated, e.g., S,M,L)" className="w-full p-2 border rounded" />
                                     </div>
                                     <div>

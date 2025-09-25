@@ -9,15 +9,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
     const { data: session } = useSession();
-    const [formData, setFormData] = useState({
-        name: '',
-        description: '',
-        basePrice: '',
-        discountPercent: 0,
-        isAvailable: true,
-        categoryIds: [],
-        variants: []
-    });
+    const [formData, setFormData] = useState(null);
     const [allCategories, setAllCategories] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -42,7 +34,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                 categoryIds: product.categories.map(c => c.id),
                 variants: product.gallery.map(g => ({
                     ...g,
-                    sizes: Array.isArray(g.sizes) ? g.sizes.join(',') : '',
+                    sizes: Array.isArray(g.sizes) ? g.sizes.join(',') : g.sizes,
                     quantity: g.quantity || 0,
                     files: [],
                     previews: g.images
@@ -81,11 +73,11 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
     };
 
     const addVariant = () => {
-            setFormData(prev => ({
-                ...prev,
-                variants: [...prev.variants, { color: '', sizes: '', quantity: 0, files: [], previews: [] }]
-            }));
-        };
+        setFormData(prev => ({
+            ...prev,
+            variants: [...prev.variants, { color: '', sizes: '', quantity: 0, files: [], previews: [] }]
+        }));
+    };
 
     const removeVariant = (index) => {
         const newVariants = formData.variants.filter((_, i) => i !== index);
@@ -105,9 +97,10 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
 
         const variantsForApi = formData.variants.map(v => ({
             color: v.color,
+            quantity: v.quantity || 0, // ✅ FIX: Send quantity to backend
             sizes: Array.isArray(v.sizes) ? v.sizes : (v.sizes ? v.sizes.split(',').map(s => s.trim()).filter(s => s) : []),
-            imageCount: v.imageCount,
-            images: v.previews, // Keep existing images
+            imageCount: v.files?.length || 0, // Use new files length
+            images: v.previews, 
         }));
 
         formPayload.append('variants', JSON.stringify(variantsForApi));
@@ -148,7 +141,7 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
         }
     };
 
-    if (!isOpen) return null;
+    if (!isOpen || !formData) return null;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
@@ -218,8 +211,9 @@ const EditProductModal = ({ isOpen, onClose, product, onProductUpdated }) => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <input value={variant.color} onChange={e => handleVariantChange(index, 'color', e.target.value)} placeholder="Color (e.g., Blue)" className="w-full p-2 border rounded mb-2" />
-                                         <input type="number" value={variant.quantity} onChange={e => handleVariantChange(index, 'quantity', e.target.value)} placeholder="Quantity" className="w-full p-2 border rounded mb-2" />
-                                        <input value={Array.isArray(variant.sizes) ? variant.sizes.join(',') : variant.sizes} onChange={e => handleVariantChange(index, 'sizes', e.target.value)} placeholder="Sizes (comma-separated, e.g., S,M,L)" className="w-full p-2 border rounded mb-2" />
+                                        {/* ✅ FIX: Add Quantity input */}
+                                        <input type="number" value={variant.quantity} onChange={e => handleVariantChange(index, 'quantity', e.target.value)} placeholder="Quantity" className="w-full p-2 border rounded mb-2" />
+                                        <input value={variant.sizes} onChange={e => handleVariantChange(index, 'sizes', e.target.value)} placeholder="Sizes (comma-separated, e.g., S,M,L)" className="w-full p-2 border rounded mb-2" />
                                     </div>
                                     <div>
                                         <label className="w-full flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-100">
