@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSession, signOut } from "next-auth/react";
 import { User, ChevronRight, FileText, Gift, LogOut, LayoutDashboard } from "lucide-react";
 import { useLanguage } from '@/context/LanguageContext';
-import { useTheme } from '@/context/ThemeContext';
+import { useTheme } from "next-themes"; // Correct import
 import { translations } from '@/lib/translations';
 import { fetchUserProfile } from '@/services/profile.service';
 import Image from 'next/image';
@@ -12,9 +12,14 @@ import Image from 'next/image';
 const ProfileMenu = ({ onClose }) => {
   const { data: session } = useSession();
   const { language, setLanguage } = useLanguage();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme(); // Use the hook from next-themes
   const t = translations[language];
   const [profile, setProfile] = useState(null);
+
+  // Define the toggle function
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -29,7 +34,7 @@ const ProfileMenu = ({ onClose }) => {
   if (!session) return null;
 
   return (
-    <div 
+    <div
       className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 z-50"
       onClick={(e) => e.stopPropagation()}
     >
@@ -54,7 +59,7 @@ const ProfileMenu = ({ onClose }) => {
           </div>
         </div>
       </div>
-      
+
       <div className="py-2">
         {session.user.role === 'USER' && (
           <>
@@ -70,9 +75,14 @@ const ProfileMenu = ({ onClose }) => {
           </>
         )}
         {session.user.role === 'ADMIN' && (
+          <>
+          <Link href="/profile" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <div className="flex items-center gap-3"><User className="w-5 h-5" /><span>{t.profile}</span></div><ChevronRight className="w-4 h-4" />
+            </Link>
           <Link href="/admin/dashboard" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
             <div className="flex items-center gap-3"><LayoutDashboard className="w-5 h-5" /><span>{t.dashboard}</span></div><ChevronRight className="w-4 h-4" />
           </Link>
+          </>
         )}
       </div>
 

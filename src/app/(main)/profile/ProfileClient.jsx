@@ -5,17 +5,16 @@ import { useRouter } from "next/navigation";
 import React, { useState, useEffect } from "react";
 import { ChevronRight } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-import { useTheme } from "@/context/ThemeContext";
 import { translations } from "@/lib/translations";
 import { fetchUserProfile, updateUserProfile } from "@/services/profile.service";
 import toast from 'react-hot-toast';
+import { useTheme } from "next-themes";
 
 const ProfileClient = () => {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
   const { language, setLanguage } = useLanguage();
-  const { theme, toggleTheme } = useTheme();
   const t = translations[language];
 
   const [formData, setFormData] = useState({
@@ -28,6 +27,11 @@ const ProfileClient = () => {
   });
   const [profileImage, setProfileImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light');
+  };
 
   useEffect(() => {
     if (status === "unauthenticated") router.push("/login");

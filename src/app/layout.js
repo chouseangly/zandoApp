@@ -2,9 +2,9 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import SessionWrapper from "@/components/SessionWrapper";
 import { LanguageProvider } from "@/context/LanguageContext";
-import { ThemeProvider } from "@/context/ThemeContext";
-import { CartProvider } from "@/context/CartContext"; // ✅ IMPORT THE NEW PROVIDER
-import { Toaster } from 'react-hot-toast'; // ✅ IMPORT TOASTER
+import { ThemeProvider } from "next-themes";
+import { CartProvider } from "@/context/CartContext";
+import { Toaster } from 'react-hot-toast';
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -19,20 +19,19 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        suppressHydrationWarning
         className={`${poppins.variable} antialiased`}
       >
         <SessionWrapper>
-          <ThemeProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <LanguageProvider>
               <CartProvider>
                 {children}
                 <Toaster position="bottom-right" />
               </CartProvider>
             </LanguageProvider>
-          </ThemeProvider>
+          </ThemeProvider >
         </SessionWrapper>
       </body>
     </html>
