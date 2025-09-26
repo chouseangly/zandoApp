@@ -116,3 +116,33 @@ export async function fetchTransactionStatusCounts() {
         return { 'All Status': 0 };
     }
 }
+
+export async function updateTransactionStatus(transactionId, status) {
+    const session = await getSession();
+    if (!session?.user?.token) {
+        console.error("Authentication token not found.");
+        return null;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/transactions/${transactionId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.user.token}`
+            },
+            body: status
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update transaction status');
+        }
+
+        const apiResponse = await response.json();
+        return apiResponse.payload;
+
+    } catch (error) {
+        console.error(`Failed to update status for transaction ${transactionId}:`, error);
+        return null;
+    }
+}

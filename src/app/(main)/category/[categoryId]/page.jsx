@@ -1,13 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-// ✅ FIX: Import useParams from next/navigation
 import { useParams } from 'next/navigation';
 import { fetchProductsByCategoryId } from '@/services/getCategoryById.service';
 import ProductCard from '@/components/landing/ProductCard';
+import Image from 'next/image';
 
 const CategoryPage = () => {
-  // ✅ FIX: Use the useParams hook to get the categoryId
   const params = useParams();
   const { categoryId } = params;
 
@@ -28,9 +27,6 @@ const CategoryPage = () => {
 
   return (
     <div className="w-full mx-auto py-8 px-4 md:px-8">
-      <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8 text-center">
-        Category Products
-      </h1>
       
       {loading ? (
         <p className="text-center text-gray-500">Loading products...</p>
@@ -41,10 +37,19 @@ const CategoryPage = () => {
           ))}
         </div>
       ) : (
-        <p className="text-center text-gray-500">No products found in this category.</p>
+        <div className="flex flex-col items-center justify-center text-center">
+          <Image 
+            src="/no-listings-fav.jpg" 
+            width={500}
+            height={300}
+            className='object-cover mb-4' 
+            alt="No products found" 
+          />
+          <p className="text-gray-500">No products found in this category.</p>
+        </div>
       )}
     </div>
-  );
+  );  
 };
 
 export default CategoryPage;

@@ -1,37 +1,50 @@
-// src/app/admin/transactions/TransactionClient.jsx
-
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Search, CalendarIcon, ChevronDown, Filter, Upload } from 'lucide-react';
+import { Search, ChevronDown, Filter, Upload } from 'lucide-react';
 import { format, parseISO, isValid } from 'date-fns';
-import { fetchTransactions, fetchTransactionStatusCounts } from '@/services/transaction.service';
-import DatePicker from '@/components/ui/DatePicker'; // Your DatePicker component
-import TransactionCard from './transactionCard'; // Component to display individual transaction
+import { fetchTransactions, fetchTransactionStatusCounts, updateTransactionStatus } from '@/services/transaction.service';
+import DatePicker from '@/components/ui/DatePicker';
+import TransactionCard from './transactionCard';
 
-// Status filter options
 const statusOptions = ['All Status', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Pending'];
 
-const TransactionClient = ({ initialSearchParams }) => {
+const TransactionClient = () => {
     const router = useRouter();
-    const searchParams = useSearchParams(); // Use this for reading current URL state
+    const searchParams = useSearchParams();
     
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statusCounts, setStatusCounts] = useState({});
     
-    // State for local input values before updating URL
     const [searchInputValue, setSearchInputValue] = useState('');
-    const [selectedDate, setSelectedDate] = useState(null); // For single date picker
+    const [selectedDate, setSelectedDate] = useState(null);
 
-    // Derive current filter states from URL search params
     const currentStatusFilter = searchParams.get('status') || 'All Status';
     const currentSearchQuery = searchParams.get('q') || '';
     const currentDateFrom = searchParams.get('dateFrom');
-    const currentDateTo = searchParams.get('dateTo'); // Not directly used by single date picker, but good for range if implemented
+    const currentDateTo = searchParams.get('dateTo');
 
-    // Initialize local input value from URL on first render or URL change
+    const handleStatusChange = async (transactionId, newStatus) => {
+        const originalTransactions = [...transactions];
+        
+        setTransactions(prev =>
+            prev.map(t => (t.id === transactionId ? { ...t, status: newStatus } : t))
+        );
+
+        const updatedTransaction = await updateTransactionStatus(transactionId, newStatus);
+
+        if (!updatedTransaction) {
+            setTransactions(originalTransactions);
+            // You can add an error toast here if you like
+        } else {
+            // Re-fetch counts to update the tabs
+            const fetchedCounts = await fetchTransactionStatusCounts();
+            setStatusCounts(fetchedCounts);
+        }
+    };
+
     useEffect(() => {
         setSearchInputValue(currentSearchQuery);
         if (currentDateFrom && isValid(parseISO(currentDateFrom))) {
@@ -41,7 +54,6 @@ const TransactionClient = ({ initialSearchParams }) => {
         }
     }, [currentSearchQuery, currentDateFrom]);
 
-    // Function to update URL search parameters
     const updateSearchParams = useCallback((key, value) => {
         const newParams = new URLSearchParams(searchParams.toString());
         if (value) {
@@ -52,33 +64,27 @@ const TransactionClient = ({ initialSearchParams }) => {
         router.push(`?${newParams.toString()}`);
     }, [router, searchParams]);
 
-    // Handle Search input change (updates URL on submit/debounce)
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         updateSearchParams('q', searchInputValue.trim());
     };
 
-    // Handle Status filter click
     const handleStatusFilter = (status) => {
         updateSearchParams('status', status === 'All Status' ? null : status);
     };
 
-    // Handle Date selection
     const handleDateSelect = (date) => {
         setSelectedDate(date);
         if (date) {
-            // For a single date picker, we filter by that specific date
-            // You might want a range picker for dateFrom/dateTo in a real app
             const formattedDate = format(date, 'yyyy-MM-dd');
             updateSearchParams('dateFrom', formattedDate);
-            updateSearchParams('dateTo', formattedDate); // For single date, dateFrom and dateTo are the same
+            updateSearchParams('dateTo', formattedDate);
         } else {
             updateSearchParams('dateFrom', null);
             updateSearchParams('dateTo', null);
         }
     };
 
-    // Fetch transactions based on URL parameters
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
@@ -94,7 +100,7 @@ const TransactionClient = ({ initialSearchParams }) => {
 
             const [fetchedTransactions, fetchedCounts] = await Promise.all([
                 fetchTransactions(filters),
-                fetchTransactionStatusCounts(), // Fetch counts separately as they might not change with filters
+                fetchTransactionStatusCounts(),
             ]);
             
             setTransactions(fetchedTransactions);
@@ -103,7 +109,7 @@ const TransactionClient = ({ initialSearchParams }) => {
         };
 
         loadData();
-    }, [currentStatusFilter, currentSearchQuery, currentDateFrom, currentDateTo]); // Dependencies on URL params
+    }, [currentStatusFilter, currentSearchQuery, currentDateFrom, currentDateTo]);
 
     return (
         <div className="px-4 py-8 bg-gray-50 min-h-screen">
@@ -121,7 +127,6 @@ const TransactionClient = ({ initialSearchParams }) => {
                     </button>
                 </div>
 
-                {/* Filter and Search Bar */}
                 <div className="bg-white p-6 rounded-xl shadow-md mb-8">
                     <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
                         <form onSubmit={handleSearchSubmit} className="relative flex-grow max-w-sm">
@@ -146,7 +151,6 @@ const TransactionClient = ({ initialSearchParams }) => {
                         </div>
                     </div>
 
-                    {/* Status Tabs */}
                     <div className="flex flex-wrap gap-2">
                         {statusOptions.map(status => (
                             <button
@@ -164,7 +168,6 @@ const TransactionClient = ({ initialSearchParams }) => {
                     </div>
                 </div>
 
-                {/* Transactions Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
                         Array.from({ length: 6 }).map((_, i) => (
@@ -177,19 +180,15 @@ const TransactionClient = ({ initialSearchParams }) => {
                         ))
                     ) : transactions.length > 0 ? (
                         transactions.map(transaction => (
-                            <TransactionCard key={transaction.id} transaction={transaction} />
+                            <TransactionCard
+                                key={transaction.id}
+                                transaction={transaction}
+                                onStatusChange={handleStatusChange}
+                            />
                         ))
                     ) : (
                         <div className="col-span-full text-center py-10 text-gray-600">No transactions found for the current filters.</div>
                     )}
-                </div>
-
-                {/* Pagination (Placeholder - not fully implemented in this example) */}
-                <div className="flex justify-center mt-8">
-                    {/* You'll add pagination controls here based on your backend API */}
-                    {/* <button className="px-4 py-2 border rounded-lg hover:bg-gray-100">Previous</button> */}
-                    {/* <span className="mx-2">Page 1 of 10</span> */}
-                    {/* <button className="px-4 py-2 border rounded-lg hover:bg-gray-100">Next</button> */}
                 </div>
             </div>
         </div>

@@ -9,7 +9,8 @@ import DeliveryAddress from './DeliveryAddress';
 import ShoppingBagSummary from './ShoppingBagSummary';
 import PaymentOptions from './PaymentOptions';
 import OrderTotals from './OrderTotals';
-import { fetchUserProfile } from '@/services/profile.service'; // Import the new service
+import { fetchUserProfile } from '@/services/profile.service';
+import QRCodeModal from './QRCodeModal'; // Import the new modal component
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
 
@@ -26,6 +27,7 @@ const CheckoutClient = () => {
     const [selectedPayment, setSelectedPayment] = useState('ABA PAY');
     const [contactMethod, setContactMethod] = useState('Phone call');
     const [isLoading, setIsLoading] = useState(false);
+    const [isModalOpen, setModalOpen] = useState(false); // State to control modal visibility
 
     useEffect(() => {
         if (status === 'authenticated' && session?.user?.id) {
@@ -42,7 +44,6 @@ const CheckoutClient = () => {
             loadUserProfile();
         }
     }, [status, session]);
-
 
     const cartProducts = cartItems
         .map(item => {
@@ -68,7 +69,7 @@ const CheckoutClient = () => {
         }
     }, [status, cartProducts, router]);
 
-    const handleCheckout = async () => {
+    const handleConfirmPayment = async () => {
         setIsLoading(true);
         const toastId = toast.loading('Placing your order...');
 
@@ -97,7 +98,8 @@ const CheckoutClient = () => {
             }
 
             toast.success('Order placed successfully!', { id: toastId });
-            router.push('/profile'); 
+            setModalOpen(false); // Close modal on success
+            router.push('/profile');
             
         } catch (error) {
             console.error("Checkout error:", error);
@@ -106,58 +108,77 @@ const CheckoutClient = () => {
             setIsLoading(false);
         }
     };
+    
+    const handleCheckoutClick = () => {
+        // For non-QR methods, process payment directly. For QR methods, open modal.
+        if (selectedPayment === 'Cash On Delivery' || selectedPayment === 'Credit/Debit Card') {
+            handleConfirmPayment();
+        } else {
+            setModalOpen(true);
+        }
+    };
+
 
     if (status === 'loading' || !session || !userProfile) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
     return (
-        <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-                {/* Left Column */}
-                <div>
-                    <DeliveryAddress
-                        user={session.user}
-                        address={deliveryAddress}
-                        setAddress={setDeliveryAddress}
-                    />
-                    <ShoppingBagSummary items={cartProducts} />
-                </div>
-
-                {/* Right Column */}
-                <div>
-                    <PaymentOptions selected={selectedPayment} onSelect={setSelectedPayment} />
-                    
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700 mt-6">
-                         <h3 className="font-semibold text-lg mb-4">Preferred contact method</h3>
-                         <div className="flex items-center gap-2 mb-4">
-                            {['Phone call', 'Telegram', 'WhatsApp'].map(method => (
-                                <button key={method} onClick={() => setContactMethod(method)} className={`flex-1 py-2 px-3 text-sm rounded-md border transition-colors ${contactMethod === method ? 'bg-black text-white border-black' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-50'}`}>
-                                    {method}
-                                </button>
-                            ))}
-                         </div>
-                         <input type="text" value={deliveryAddress.phoneNumber} onChange={(e) => setDeliveryAddress(prev => ({ ...prev, phoneNumber: e.target.value }))} className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600" />
+        <>
+            <div className="container mx-auto px-4 py-10 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+                    {/* Left Column */}
+                    <div>
+                        <DeliveryAddress
+                            user={session.user}
+                            address={deliveryAddress}
+                            setAddress={setDeliveryAddress}
+                        />
+                        <ShoppingBagSummary items={cartProducts} />
                     </div>
 
-            
-
-                     <OrderTotals 
-                        subtotal={subtotal} 
-                        totalSave={totalSave} 
-                        deliveryFee={deliveryFee} 
-                        amountToPay={amountToPay}
-                     />
-                     <button 
-                        onClick={handleCheckout} 
-                        disabled={isLoading}
-                        className="w-full mt-6 bg-black text-white py-3.5 rounded-xl font-semibold hover:bg-gray-800 transition-transform transform hover:scale-105 disabled:bg-gray-400"
-                    >
-                        {isLoading ? 'Processing...' : 'Check out'}
-                    </button>
+                    {/* Right Column */}
+                    <div>
+                        <PaymentOptions selected={selectedPayment} onSelect={setSelectedPayment} />
+                        
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700 mt-6">
+                            <h3 className="font-semibold text-lg mb-4">Preferred contact method</h3>
+                            <div className="flex items-center gap-2 mb-4">
+                                {['Phone call', 'Telegram', 'WhatsApp'].map(method => (
+                                    <button key={method} onClick={() => setContactMethod(method)} className={`flex-1 py-2 px-3 text-sm rounded-md border transition-colors ${contactMethod === method ? 'bg-black text-white border-black' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:bg-gray-50'}`}>
+                                        {method}
+                                    </button>
+                                ))}
+                            </div>
+                            <input type="text" value={deliveryAddress.phoneNumber} onChange={(e) => setDeliveryAddress(prev => ({ ...prev, phoneNumber: e.target.value }))} className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600" />
+                        </div>
+                        
+                        <OrderTotals 
+                            subtotal={subtotal} 
+                            totalSave={totalSave} 
+                            deliveryFee={deliveryFee} 
+                            amountToPay={amountToPay}
+                        />
+                        <button 
+                            onClick={handleCheckoutClick}
+                            disabled={isLoading}
+                            className="w-full mt-6 bg-black text-white py-3.5 rounded-xl font-semibold hover:bg-gray-800 transition-transform transform hover:scale-105 disabled:bg-gray-400"
+                        >
+                            {isLoading ? 'Processing...' : 'Check out'}
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
+
+            <QRCodeModal
+                isOpen={isModalOpen}
+                onClose={() => !isLoading && setModalOpen(false)}
+                onConfirm={handleConfirmPayment}
+                paymentMethod={selectedPayment}
+                amountToPay={amountToPay}
+                isLoading={isLoading}
+            />
+        </>
     );
 };
 

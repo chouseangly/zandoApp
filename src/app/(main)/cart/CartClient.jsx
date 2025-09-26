@@ -28,7 +28,7 @@ const CartClient = () => {
                 {cartProducts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                         <Image
-                            src="/no listings fav.jpg"
+                            src="/no-listings-fav.jpg"
                             alt="Empty Cart"
                             width={300}
                             height={300}

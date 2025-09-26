@@ -1,8 +1,9 @@
+// chouseangly/zandoapp/zandoApp-main/src/app/admin/customers/CustomerClient.jsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Plus, Search, MoreHorizontal, Download, Upload, Users, ListOrdered, FileText, DollarSign } from 'lucide-react';
-import { fetchAllCustomers, fetchAllTransactionsForCustomerView } from '@/services/customer.service';
+import { fetchAllCustomers, fetchAllTransactionsForCustomerView, fetchAllUserProfiles } from '@/services/customer.service';
 import { fetchDashboardStats } from '@/services/dashboard.service';
 import UserProfileModal from './UserProfileModal';
 import { format } from 'date-fns';
@@ -69,19 +70,27 @@ const CustomerClient = () => {
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
-            const [fetchedTransactions, fetchedCustomers, fetchedStats] = await Promise.all([
+            const [fetchedTransactions, fetchedCustomers, fetchedStats, fetchedProfiles] = await Promise.all([
                 fetchAllTransactionsForCustomerView(),
                 fetchAllCustomers(),
-                fetchDashboardStats()
+                fetchDashboardStats(),
+                fetchAllUserProfiles()
             ]);
             
-            // Enhance transaction data with some placeholder details for UI completeness
-            const enhancedTransactions = fetchedTransactions.map(t => ({
-                ...t,
-                // The backend provides most data, we only mock what's missing
-                amountDue: (t.totalAmount * (Math.random() * 0.5)).toFixed(2), // Mock amount due
-                shopRate: Math.floor(Math.random() * 100), // Mock shop rate
-            }));
+            const profilesMap = new Map(fetchedProfiles.map(p => [p.userId, p]));
+
+            const enhancedTransactions = fetchedTransactions.map(t => {
+              const userProfile = t.user ? profilesMap.get(t.user.userId) : null;
+              return {
+                  ...t,
+                  user: {
+                      ...t.user,
+                      profileImage: userProfile?.profileImage
+                  },
+                  amountDue: (t.totalAmount * (Math.random() * 0.5)).toFixed(2),
+                  shopRate: Math.floor(Math.random() * 100),
+              }
+            });
 
             setTransactionData(enhancedTransactions);
             setCustomerCount(fetchedCustomers.length);
@@ -100,7 +109,6 @@ const CustomerClient = () => {
     }, [transactionData, searchQuery]);
 
     const handleViewProfile = (transaction) => {
-        // We pass the user object from the transaction to the modal
         setSelectedCustomer(transaction.user);
         setProfileModalOpen(true);
     };
@@ -133,7 +141,7 @@ const CustomerClient = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <StatCard title="All Customers" value={`${customerCount.toLocaleString()}+`} percentage="+20.9%" icon={Users}>
                     <div className="flex -space-x-2">
-                         {transactionData.slice(0, 4).map(t => t.user && <img key={t.id} className="w-6 h-6 rounded-full border-2 border-white" src={`https://ui-avatars.com/api/?name=${t.user.firstName}+${t.user.lastName}&background=random`} alt={t.user.userName} />)}
+                         {transactionData.slice(0, 4).map(t => t.user && <img key={t.id} className="w-6 h-6 rounded-full border-2 border-white" src={t.user.profileImage || `https://ui-avatars.com/api/?name=${t.user.firstName}+${t.user.lastName}&background=random`} alt={t.user.userName} />)}
                     </div>
                 </StatCard>
                 <StatCard title="Orders" value={stats.totalOrders.toLocaleString()} percentage="+5.9%" icon={ListOrdered} />
@@ -185,7 +193,7 @@ const CustomerClient = () => {
                                     <td className="px-4 py-2">
                                         {transaction.user ? (
                                             <div className="flex items-center gap-3">
-                                                <img src={`https://ui-avatars.com/api/?name=${transaction.user.firstName}+${transaction.user.lastName}&background=random`} alt={transaction.user.userName} className="w-8 h-8 rounded-full object-cover" />
+                                                <img src={transaction.user.profileImage || `https://ui-avatars.com/api/?name=${transaction.user.firstName}+${transaction.user.lastName}&background=random`} alt={transaction.user.userName} className="w-8 h-8 rounded-full object-cover" />
                                                 <span className="font-medium text-gray-800">{transaction.user.firstName} {transaction.user.lastName}</span>
                                             </div>
                                         ) : (

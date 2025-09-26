@@ -1,17 +1,30 @@
 "use client";
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from "next-auth/react";
 import { User, ChevronRight, FileText, Gift, LogOut, LayoutDashboard } from "lucide-react";
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { translations } from '@/lib/translations';
+import { fetchUserProfile } from '@/services/profile.service';
+import Image from 'next/image';
 
 const ProfileMenu = ({ onClose }) => {
   const { data: session } = useSession();
   const { language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const t = translations[language];
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      const loadProfile = async () => {
+        const userProfile = await fetchUserProfile(session.user.id);
+        setProfile(userProfile);
+      };
+      loadProfile();
+    }
+  }, [session]);
 
   if (!session) return null;
 
@@ -22,8 +35,18 @@ const ProfileMenu = ({ onClose }) => {
     >
       <div className="p-4 border-b dark:border-gray-600">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
-            <User className="w-6 h-6 text-gray-500 dark:text-gray-300" />
+          <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center overflow-hidden">
+            {profile?.profileImage ? (
+              <Image
+                src={profile.profileImage}
+                alt="Profile"
+                width={48}
+                height={48}
+                className="object-cover"
+              />
+            ) : (
+              <User className="w-6 h-6 text-gray-500 dark:text-gray-300" />
+            )}
           </div>
           <div>
             <p className="font-semibold text-gray-800 dark:text-gray-100">{session.user.name}</p>
@@ -33,20 +56,24 @@ const ProfileMenu = ({ onClose }) => {
       </div>
       
       <div className="py-2">
-        <Link href="/profile" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-          <div className="flex items-center gap-3"><User className="w-5 h-5" /><span>{t.profile}</span></div><ChevronRight className="w-4 h-4" />
-        </Link>
+        {session.user.role === 'USER' && (
+          <>
+            <Link href="/profile" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <div className="flex items-center gap-3"><User className="w-5 h-5" /><span>{t.profile}</span></div><ChevronRight className="w-4 h-4" />
+            </Link>
+            <Link href="/orders" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <div className="flex items-center gap-3"><FileText className="w-5 h-5" /><span>{t.myOrders}</span></div><ChevronRight className="w-4 h-4" />
+            </Link>
+            <Link href="/gift-cards" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+              <div className="flex items-center gap-3"><Gift className="w-5 h-5" /><span>{t.giftCard}</span></div><ChevronRight className="w-4 h-4" />
+            </Link>
+          </>
+        )}
         {session.user.role === 'ADMIN' && (
           <Link href="/admin/dashboard" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
             <div className="flex items-center gap-3"><LayoutDashboard className="w-5 h-5" /><span>{t.dashboard}</span></div><ChevronRight className="w-4 h-4" />
           </Link>
         )}
-        <Link href="/orders" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-          <div className="flex items-center gap-3"><FileText className="w-5 h-5" /><span>{t.myOrders}</span></div><ChevronRight className="w-4 h-4" />
-        </Link>
-        <Link href="/gift-cards" onClick={onClose} className="flex items-center justify-between px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-          <div className="flex items-center gap-3"><Gift className="w-5 h-5" /><span>{t.giftCard}</span></div><ChevronRight className="w-4 h-4" />
-        </Link>
       </div>
 
       <div className="p-4 border-t dark:border-gray-600 space-y-4">

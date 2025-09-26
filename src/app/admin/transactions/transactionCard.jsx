@@ -1,37 +1,22 @@
-// src/app/admin/transactions/TransactionCard.jsx
-
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 
-const StatusBadge = ({ status }) => {
-    let baseClasses = "px-3 py-1 text-xs font-semibold rounded-full";
-    let statusStyle = "";
+const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
+const getStatusColor = (status) => {
     switch (status) {
-        case 'Delivered':
-            statusStyle = "bg-blue-100 text-blue-800";
-            break;
-        case 'Processing':
-            statusStyle = "bg-yellow-100 text-yellow-800";
-            break;
-        case 'Shipped':
-            statusStyle = "bg-purple-100 text-purple-800";
-            break;
-        case 'Cancelled':
-            statusStyle = "bg-red-100 text-red-800";
-            break;
-        case 'Pending': // As seen in your image
-            statusStyle = "bg-orange-100 text-orange-800"; // Using orange for pending
-            break;
-        default:
-            statusStyle = "bg-gray-100 text-gray-800";
-            break;
+        case 'Delivered': return "bg-blue-100 text-blue-800";
+        case 'Processing': return "bg-yellow-100 text-yellow-800";
+        case 'Shipped': return "bg-purple-100 text-purple-800";
+        case 'Cancelled': return "bg-red-100 text-red-800";
+        case 'Pending': return "bg-orange-100 text-orange-800";
+        default: return "bg-gray-100 text-gray-800";
     }
-    return <span className={`${baseClasses} ${statusStyle}`}>{status}</span>;
 };
 
-const TransactionCard = ({ transaction }) => {
+const TransactionCard = ({ transaction, onStatusChange }) => { // Correctly receive onStatusChange prop
     const orderDate = transaction.orderDate ? format(parseISO(transaction.orderDate), 'dd MMMM yyyy') : 'N/A';
+    const statusColorClasses = getStatusColor(transaction.status);
 
     return (
         <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between">
@@ -41,7 +26,20 @@ const TransactionCard = ({ transaction }) => {
                     <span className="font-semibold text-gray-700">#{transaction.id}</span>
                     <span className="text-sm text-gray-500">{transaction.orderType}</span>
                 </div>
-                <StatusBadge status={transaction.status} />
+                <div className="relative">
+                    <select
+                        value={transaction.status}
+                        onChange={(e) => onStatusChange(transaction.id, e.target.value)}
+                        className={`appearance-none cursor-pointer pl-3 pr-8 py-1 text-xs font-semibold rounded-full border-0 focus:ring-2 focus:ring-blue-500 ${statusColorClasses}`}
+                    >
+                        {statusOptions.map(option => (
+                            <option key={option} value={option}>{option}</option>
+                        ))}
+                    </select>
+                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
             </div>
 
             <div className="flex items-center gap-4 mb-3">

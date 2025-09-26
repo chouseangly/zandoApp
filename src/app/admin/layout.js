@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 // ... (imports remain the same)
 "use client";
 
@@ -45,7 +46,9 @@ const Sidebar = () => {
     return (
         <aside className="w-64 bg-gray-900 text-gray-400 flex-col min-h-screen hidden lg:flex fixed">
             <div className="p-6 text-center border-b border-gray-800">
-                 <img src="/logo.png" alt="Zando Logo" className="mx-auto h-8 w-auto invert" />
+                 <Link href="/">
+                     <img src="/logo.png" alt="Zando Logo" className="mx-auto h-8 w-auto invert" />
+                 </Link>
             </div>
             <nav className="flex-1 px-4 py-6 space-y-2">
                 <Link href="/admin/dashboard" className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isActive('/admin/dashboard') ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}>

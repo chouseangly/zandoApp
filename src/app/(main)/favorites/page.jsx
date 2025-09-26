@@ -21,7 +21,7 @@ export default function FavoritePage() {
                 {favoriteProducts.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 text-center">
                         <Image
-                            src="/no listings fav.jpg" // Using an existing image as a placeholder
+                            src="/no-listings-fav.jpg" // Using an existing image as a placeholder
                             alt="No Favorites"
                             width={300}
                             height={300}
