@@ -140,21 +140,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* WE ACCEPT */}
-        <div className="mt-10 pt-8 text-left">
-          {/* <h3 className="font-bold tracking-wider text-sm mb-4">{t.weAccept}</h3>
-          <div className="flex flex-wrap items-center gap-2">
-            <Image src="/aba-pay-web.png" alt="ABA Pay" width={80} height={25} className="h-8 w-auto object-contain" />
-            <Image src="/credit-debit-card.png" alt="Credit/Debit Card" width={120} height={25} className="h-8 w-auto object-contain" />
-            <Image src="/xpay.png" alt="ACELDA Pay" width={80} height={25} className="h-8 w-auto object-contain" />
-          </div>
-          <div className="flex flex-wrap items-center gap-2 mt-2">
-            <Image src="/Wing.png" alt="Wing Bank" width={80} height={25} className="h-8 w-auto object-contain" />
-            <Image src="/chip-mong-bank.png" alt="Chip Mong Bank" width={100} height={25} className="h-8 w-auto object-contain" />
-            <Image src="/cod-kh-en.png" alt="Cash on delivery" width={80} height={25} className="h-8 w-auto object-contain" />
-          </div> */}
-        
-        </div>
       </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 text-end mt-5">© 2024 Zando. All rights reserved.</p>
     </footer>

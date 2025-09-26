@@ -1,5 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
-// ... (imports remain the same)
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -12,7 +10,6 @@ import {
 } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
 
-// ... (SubCategory component remains the same)
 const SubCategory = ({ category, selectedCategory, level }) => (
     <div style={{ marginLeft: `${level * 10}px` }}>
         <Link href={`/admin/products?categoryId=${category.id}`}
@@ -26,7 +23,6 @@ const SubCategory = ({ category, selectedCategory, level }) => (
 );
 
 const Sidebar = () => {
-    // ... (state and useEffects remain the same)
     const [categories, setCategories] = useState([]);
     const [isProductsOpen, setIsProductsOpen] = useState(true);
     const pathname = usePathname();
@@ -70,7 +66,6 @@ const Sidebar = () => {
                         </div>
                     </Link>
                     {isProductsOpen && (
-                        // ... (product subcategories logic remains the same)
                         <div className="pl-4 mt-2 space-y-1 border-l border-gray-700 ml-5 max-h-[calc(100vh-400px)] overflow-y-auto hide-scrollbar">
                             <Link href="/admin/products"
                                className={`flex justify-between items-center text-sm py-2 px-2 rounded-md ${!selectedCategory ? 'bg-gray-600' : 'hover:bg-gray-700'}`}>
@@ -87,7 +82,6 @@ const Sidebar = () => {
                         </div>
                     )}
                 </div>
-                {/* MODIFICATION: Add Customers link here */}
                 <Link href="/admin/customers" className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isActive('/admin/customers') ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}>
                     <Users size={20} className="mr-3" /> Customers
                 </Link>
@@ -104,16 +98,12 @@ const Sidebar = () => {
     );
 };
 
-
-// ... (Header, GlobalStyles, and AdminLayout components remain the same)
 const Header = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
     
-    // Use local state for the input to provide a smooth typing experience
     const [inputValue, setInputValue] = useState(searchParams.get('q') || '');
 
-    // Sync input value if user navigates with browser back/forward buttons
     useEffect(() => {
         setInputValue(searchParams.get('q') || '');
     }, [searchParams]);
@@ -129,7 +119,6 @@ const Header = () => {
             newParams.delete('q');
         }
         
-        // Navigate to the products page with the new search query, preserving other params
         router.push(`/admin/products?${newParams.toString()}`);
     };
 
@@ -142,16 +131,16 @@ const Header = () => {
                     placeholder="Search..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    className="w-full bg-white py-2 pl-10 pr-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white dark:bg-gray-700 py-2 pl-10 pr-4 rounded-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 dark:text-gray-200"
                 />
             </form>
             <div className="flex items-center gap-6">
-                <div className="relative flex items-center gap-2 text-gray-600">
+                <div className="relative flex items-center gap-2 text-gray-600 dark:text-gray-300">
                     <Bell size={20} />
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                 </div>
                 <div className="flex items-center gap-3">
-                    <span className="font-semibold text-gray-700">Hypebeast Store</span>
+                    <span className="font-semibold text-gray-700 dark:text-gray-200">Hypebeast Store</span>
                     <div className="w-10 h-10 bg-red-500 text-white flex items-center justify-center rounded-full font-bold">H</div>
                 </div>
             </div>
@@ -181,7 +170,7 @@ export default function AdminLayout({ children }) {
     }
 
     return (
-        <div className="bg-gray-50 font-sans min-h-screen">
+        <div className="bg-gray-50 dark:bg-gray-900 font-sans min-h-screen">
             <GlobalStyles />
             <Suspense>
                 <Sidebar />
