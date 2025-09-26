@@ -9,7 +9,7 @@ import DeliveryAddress from './DeliveryAddress';
 import ShoppingBagSummary from './ShoppingBagSummary';
 import PaymentOptions from './PaymentOptions';
 import OrderTotals from './OrderTotals';
-import { Phone, MessageSquare, AtSign } from 'lucide-react';
+import { fetchUserProfile } from '@/services/profile.service'; // Import the new service
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api/v1';
 
@@ -18,9 +18,31 @@ const CheckoutClient = () => {
     const { data: session, status } = useSession();
     const router = useRouter();
 
+    const [userProfile, setUserProfile] = useState(null);
+    const [deliveryAddress, setDeliveryAddress] = useState({
+        address: '',
+        phoneNumber: ''
+    });
     const [selectedPayment, setSelectedPayment] = useState('ABA PAY');
     const [contactMethod, setContactMethod] = useState('Phone call');
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (status === 'authenticated' && session?.user?.id) {
+            const loadUserProfile = async () => {
+                const profile = await fetchUserProfile(session.user.id);
+                if (profile) {
+                    setUserProfile(profile);
+                    setDeliveryAddress({
+                        address: profile.address || 'Phnom Penh',
+                        phoneNumber: profile.phoneNumber || '0884979443'
+                    });
+                }
+            };
+            loadUserProfile();
+        }
+    }, [status, session]);
+
 
     const cartProducts = cartItems
         .map(item => {
@@ -52,7 +74,7 @@ const CheckoutClient = () => {
 
         const transactionData = {
             userId: session.user.id,
-            shippingAddress: "Seangly Chou, Phnom Penh, 0884979443", // Placeholder
+            shippingAddress: `${session.user.name}, ${deliveryAddress.address}, ${deliveryAddress.phoneNumber}`,
             paymentMethod: selectedPayment,
             items: cartItems.map(item => ({
                 productId: item.productId,
@@ -75,8 +97,6 @@ const CheckoutClient = () => {
             }
 
             toast.success('Order placed successfully!', { id: toastId });
-            // Here you would typically clear the cart and redirect to an order confirmation page
-            // For now, we'll just redirect to the profile page.
             router.push('/profile'); 
             
         } catch (error) {
@@ -87,7 +107,7 @@ const CheckoutClient = () => {
         }
     };
 
-    if (status === 'loading' || !session) {
+    if (status === 'loading' || !session || !userProfile) {
         return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
     }
 
@@ -96,7 +116,11 @@ const CheckoutClient = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
                 {/* Left Column */}
                 <div>
-                    <DeliveryAddress user={session.user} />
+                    <DeliveryAddress
+                        user={session.user}
+                        address={deliveryAddress}
+                        setAddress={setDeliveryAddress}
+                    />
                     <ShoppingBagSummary items={cartProducts} />
                 </div>
 
@@ -104,7 +128,6 @@ const CheckoutClient = () => {
                 <div>
                     <PaymentOptions selected={selectedPayment} onSelect={setSelectedPayment} />
                     
-                    {/* Preferred contact method */}
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700 mt-6">
                          <h3 className="font-semibold text-lg mb-4">Preferred contact method</h3>
                          <div className="flex items-center gap-2 mb-4">
@@ -114,20 +137,10 @@ const CheckoutClient = () => {
                                 </button>
                             ))}
                          </div>
-                         <input type="text" defaultValue="0884979443" className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600" />
+                         <input type="text" value={deliveryAddress.phoneNumber} onChange={(e) => setDeliveryAddress(prev => ({ ...prev, phoneNumber: e.target.value }))} className="w-full p-2 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600" />
                     </div>
 
-                    {/* Vouchers and Totals */}
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700 mt-6 space-y-4">
-                        <div className="flex justify-between items-center">
-                            <h3 className="font-semibold">Claim Code</h3>
-                            <div className="flex items-center">
-                                <input type="text" placeholder="FREE VOUCHER" className="w-40 p-2 text-sm border-l border-y rounded-l-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 focus:outline-none"/>
-                                <button className="px-4 py-2 text-sm bg-gray-200 dark:bg-gray-600 rounded-r-md font-semibold hover:bg-gray-300">Apply</button>
-                            </div>
-                        </div>
-                         <textarea placeholder="Comment" className="w-full p-2 text-sm border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 h-20 resize-none focus:outline-none"></textarea>
-                    </div>
+            
 
                      <OrderTotals 
                         subtotal={subtotal} 

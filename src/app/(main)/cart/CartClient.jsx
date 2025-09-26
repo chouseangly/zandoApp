@@ -5,6 +5,7 @@ import { useCart } from "@/context/CartContext";
 import CartItem from './CartItem';
 import Link from 'next/link';
 import Image from "next/image";
+import OrderSummary from './OrderSummary'; // Import the OrderSummary component
 
 const CartClient = () => {
     const { cartItems, products } = useCart();
@@ -49,27 +50,7 @@ const CartClient = () => {
                             ))}
                         </div>
                         <div className="lg:col-span-1">
-                            <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
-                                <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <span>Subtotal</span>
-                                        <span>${subtotal.toFixed(2)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span>Shipping</span>
-                                        <span>$5.00</span>
-                                    </div>
-                                    <div className="border-t border-gray-200 dark:border-gray-600 my-2"></div>
-                                    <div className="flex justify-between font-bold text-lg">
-                                        <span>Total</span>
-                                        <span>${(subtotal + 5).toFixed(2)}</span>
-                                    </div>
-                                </div>
-                                <button className="w-full mt-6 bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-800">
-                                    Proceed to Checkout
-                                </button>
-                            </div>
+                           <OrderSummary subtotal={subtotal} />
                         </div>
                     </div>
                 )}
