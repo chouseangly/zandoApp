@@ -8,7 +8,7 @@ import { fetchTransactions, fetchTransactionStatusCounts, updateTransactionStatu
 import DatePicker from '@/components/ui/DatePicker';
 import TransactionCard from './transactionCard';
 
-const statusOptions = ['All Status', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Pending'];
+const statusOptions = ['All Status', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Pending', 'Picked Up'];
 
 const TransactionClient = () => {
     const router = useRouter();

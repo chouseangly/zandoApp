@@ -1,7 +1,7 @@
 import React from 'react';
 import { format, parseISO } from 'date-fns';
 
-const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Picked Up'];
 
 const getStatusColor = (status) => {
     switch (status) {
@@ -10,11 +10,12 @@ const getStatusColor = (status) => {
         case 'Shipped': return "bg-purple-100 text-purple-800";
         case 'Cancelled': return "bg-red-100 text-red-800";
         case 'Pending': return "bg-orange-100 text-orange-800";
+        case 'Picked Up': return "bg-green-100 text-green-800";
         default: return "bg-gray-100 text-gray-800";
     }
 };
 
-const TransactionCard = ({ transaction, onStatusChange }) => { // Correctly receive onStatusChange prop
+const TransactionCard = ({ transaction, onStatusChange }) => {
     const orderDate = transaction.orderDate ? format(parseISO(transaction.orderDate), 'dd MMMM yyyy') : 'N/A';
     const statusColorClasses = getStatusColor(transaction.status);
 

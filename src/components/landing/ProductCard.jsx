@@ -59,8 +59,8 @@ const ProductCard = ({ product }) => {
         <div className="p-3 md:p-4">
           <div className="flex justify-between items-start">
             <h3 className="font-semibold text-gray-700 dark:text-gray-200 text-sm md:text-base mb-1 pr-2">{product.name}</h3>
-            <button onClick={handleFavoriteClick} className="flex-shrink-0 z-10 p-1">
-              <HeartIcon isFavorite={isFavorite} />
+            <button onClick={handleFavoriteClick} className="flex-shrink-0 z-10 p-0">
+              <HeartIcon size={24} isFavorite={isFavorite} />
             </button>
           </div>
           <div className="flex items-baseline">

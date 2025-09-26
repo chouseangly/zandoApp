@@ -11,7 +11,7 @@ const Banner = () => {
 
   return (
     <div className='relative w-full h-[90vh] mx-auto mt-2'>
-      <Image src="/banner.png" alt='banner' layout='fill' quality={100} />
+      <Image src="/Whisper-of-Purity.jpg" alt='banner' layout='fill' quality={100} />
       <div className='absolute inset-0 flex items-end justify-center p-12'>
         <div className="flex space-x-4">
           <button className="border border-white bg-transparent text-white px-8 py-2 text-sm font-semibold hover:bg-white hover:text-black transition-colors duration-300">
