@@ -3,9 +3,10 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useSession } from 'next-auth/react';
 import { fetchFavoritesByUserId, addFavorite, removeFavorite } from '@/services/favorite.service';
-import { fetchAllProducts } from '@/services/allProduct.service'; // Import fetchAllProducts
+import { fetchAllProducts } from '@/services/allProduct.service';
 import toast from 'react-hot-toast';
 import { fetchNotifications } from '@/services/notification.service';
+import { fetchCart, addToCart, removeFromCart } from '@/services/cart.service';
 
 const CartContext = createContext();
 
@@ -14,9 +15,8 @@ export const CartProvider = ({ children }) => {
     const [favorites, setFavorites] = useState([]);
     const [cartItems, setCartItems] = useState([]);
     const [products, setProducts] = useState([]);
-    const [notifications, setNotifications] = useState([]); // State to hold all notifications
+    const [notifications, setNotifications] = useState([]);
 
-    // Fetch all products on component mount
     useEffect(() => {
         const getProducts = async () => {
             const fetchedProducts = await fetchAllProducts();
@@ -25,22 +25,25 @@ export const CartProvider = ({ children }) => {
         getProducts();
     }, []);
 
-    // Fetch user-specific data when user logs in
-      useEffect(() => {
+    useEffect(() => {
         if (status === 'authenticated' && session?.user?.id) {
             const loadUserData = async () => {
-                const [favs, notifs] = await Promise.all([
+                const [favs, notifs, cart] = await Promise.all([
                     fetchFavoritesByUserId(session.user.id),
-                    fetchNotifications(session.user.id) // ✅ FETCH NOTIFICATIONS
+                    fetchNotifications(session.user.id),
+                    fetchCart(session.user.id)
                 ]);
-                setFavorites(favs);
-                setNotifications(notifs);
+                setFavorites(favs || []);
+                setNotifications(notifs || []);
+                if (cart) {
+                    setCartItems(cart.items || []);
+                }
             };
             loadUserData();
         } else if (status === 'unauthenticated') {
             setFavorites([]);
             setCartItems([]);
-            setNotifications([]); // ✅ CLEAR ON LOGOUT
+            setNotifications([]);
         }
     }, [status, session]);
 
@@ -52,7 +55,6 @@ export const CartProvider = ({ children }) => {
 
         const isAlreadyFavorite = favorites.some(fav => fav.productId === productId);
         if (isAlreadyFavorite) {
-            // This case is handled by the toggle, but we keep it for safety
             toast("This item is already in your wishlist!", { icon: '❤️' });
             return;
         }
@@ -78,14 +80,41 @@ export const CartProvider = ({ children }) => {
         }
     };
 
+    const handleAddToCart = async (item) => {
+        if (!session?.user?.id) {
+            toast.error("Please log in to add items to your cart.");
+            return;
+        }
+        const updatedCart = await addToCart(item);
+        if (updatedCart) {
+            setCartItems(updatedCart.items);
+            toast.success("Added to cart!");
+        } else {
+            toast.error("Failed to add to cart.");
+        }
+    };
+
+    const handleRemoveFromCart = async (cartItemId) => {
+        if (!session?.user?.id) return;
+        const success = await removeFromCart(cartItemId);
+        if (success) {
+            setCartItems(prev => prev.filter(item => item.cartItemId !== cartItemId));
+            toast.success("Removed from cart.");
+        } else {
+            toast.error("Failed to remove from cart.");
+        }
+    };
+
     const value = {
         favorites,
         cartItems,
-        products, // Provide products through context
-        notifications, // ✅ PROVIDE NOTIFICATIONS
+        products,
+        notifications,
         setNotifications,
         addFavorite: handleAddFavorite,
         removeFavorite: handleRemoveFavorite,
+        addToCart: handleAddToCart,
+        removeFromCart: handleRemoveFromCart,
     };
 
     return (

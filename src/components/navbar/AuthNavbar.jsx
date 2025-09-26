@@ -20,12 +20,11 @@ const AuthNavbar = () => {
   const { language } = useLanguage();
   const t = translations[language];
   const { favorites, cartItems, notifications } = useCart();
-  
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const unreadCount = notifications ? notifications.filter(n => !n.isRead).length : 0;
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // ✅ FIX: Corrected the typo from profileMenu_current to profileMenuRef.current
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
         setProfileMenuOpen(false);
       }
@@ -78,21 +77,21 @@ const AuthNavbar = () => {
                       <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{unreadCount}</span>
                   )}
               </Link>
-              
+
               <Link href="/favorites" className="relative cursor-pointer">
                 <Heart className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white" />
-                {favorites.length > 0 && (
+                {favorites && favorites.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{favorites.length}</span>
                 )}
               </Link>
-              <div className="relative cursor-pointer">
+              <Link href="/cart" className="relative">
                 <ShoppingBag className="h-5 w-5 text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white" />
-                {cartItems.length > 0 && (
+                {cartItems && cartItems.length > 0 && (
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">{cartItems.length}</span>
                 )}
-              </div>
+              </Link>
             </div>
-            
+
             <div className="hidden sm:flex items-center space-x-5 font-bold">
               {status === "authenticated" ? (
                 <div className="relative" ref={profileMenuRef}>
@@ -112,7 +111,7 @@ const AuthNavbar = () => {
           </div>
         </div>
       </div>
-      
+
       {hoveredCategory && <MegaMenu category={hoveredCategory} onClose={() => setHoveredCategory(null)} />}
     </div>
   );
