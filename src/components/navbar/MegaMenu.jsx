@@ -12,7 +12,7 @@ const MegaMenu = ({ category, onClose }) => {
   );
 
   return (
-    <div className="absolute top-full left-0 right-0 bg-white shadow-lg border-t border-gray-200">
+    <div className="absolute top-full left-0 right-0 bg-white dark:bg-gray-800 shadow-lg border-t border-gray-200 dark:border-gray-700">
       <div className="grid grid-cols-6 gap-x-8 py-6 px-10 max-w-7xl mx-auto">
         {subCategoriesWithItems.map((subCategory) => (
           <div key={subCategory.id}>
@@ -26,7 +26,7 @@ const MegaMenu = ({ category, onClose }) => {
               {subCategory.children.map((child) => (
                 <li key={child.id}>
                   {/* FIX: Add onClick to the Link */}
-                  <Link href={`/category/${child.id}`} onClick={onClose} className="text-gray-700 hover:text-black text-sm">
+                  <Link href={`/category/${child.id}`} onClick={onClose} className="text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white text-sm">
                     {child.name}
                   </Link>
                 </li>

@@ -149,7 +149,7 @@ const ProfileClient = () => {
               </div>
             </div>
             <div className="pt-4">
-              <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full text-center px-4 py-3 rounded-md bg-black text-white font-semibold hover:bg-gray-800 dark:hover:bg-gray-700">{t.logOut}</button>
+              <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full text-center px-4 py-3 rounded-md bg-black text-white font-semibold hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600">{t.logOut}</button>
             </div>
           </div>
         </aside>
@@ -200,7 +200,7 @@ const ProfileClient = () => {
                   <input type="date" name="dob" value={formData.dob} onChange={handleInputChange} className="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2 bg-white dark:bg-gray-700 dark:border-gray-600" />
                   <p className="mt-2 text-sm text-green-600">{t.dobReward}</p>
                 </div>
-                <button type="submit" className="w-full sm:w-auto px-10 py-3 bg-black text-white font-semibold rounded-md hover:bg-gray-800">{t.update}</button>
+                <button type="submit" className="w-full sm:w-auto px-10 py-3 bg-black text-white font-semibold rounded-md hover:bg-gray-800 dark:bg-gray-700 dark:hover:bg-gray-600">{t.update}</button>
               </form>
             </div>
           )}

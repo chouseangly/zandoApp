@@ -90,13 +90,13 @@ const ProductDetailPage = () => {
     }
 
     return (
-        <main className="bg-white min-h-screen font-sans flex items-center justify-center py-8 px-4">
+        <main className="bg-white dark:bg-gray-900 min-h-screen font-sans flex items-center justify-center py-8 px-4">
             <div className="w-full mx-auto px-[5%]">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                     <div className="flex flex-col-reverse md:flex-row gap-4">
                         <div className="flex md:flex-col gap-3 justify-center md:justify-start">
                             {selectedColor.images.map((img, index) => (
-                                <img key={index} src={img} alt={`Thumbnail ${index + 1}`} className={`w-26 h-30 object-cover rounded-md cursor-pointer border-2 transition-all ${mainImage === img ? 'border-gray-500' : 'border-transparent hover:border-gray-300'}`} onMouseEnter={() => setMainImage(img)} />
+                                <img key={index} src={img} alt={`Thumbnail ${index + 1}`} className={`w-26 h-30 object-cover rounded-md cursor-pointer border-2 transition-all ${mainImage === img ? 'border-gray-500 dark:border-gray-400' : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'}`} onMouseEnter={() => setMainImage(img)} />
                             ))}
                         </div>
                         <div className="flex-1 relative">
@@ -106,30 +106,30 @@ const ProductDetailPage = () => {
                     <div className="flex flex-col">
                         <div className="flex justify-between items-center mb-2">
                             <div className="flex items-baseline gap-3 text-xl">
-                                <span className="font-semibold text-gray-800">US ${product.price.toFixed(2)}</span>
+                                <span className="font-semibold text-gray-800 dark:text-gray-200">US ${product.price.toFixed(2)}</span>
                                 {product.discount > 0 && <span className="text-red-500 font-semibold">-{product.discount}%</span>}
-                                {product.originalPrice && <span className="text-gray-400 line-through">US ${product.originalPrice.toFixed(2)}</span>}
+                                {product.originalPrice && <span className="text-gray-400 dark:text-gray-500 line-through">US ${product.originalPrice.toFixed(2)}</span>}
                             </div>
-                            <button className="p-2 rounded-full hover:bg-gray-100"><ShareIcon className="w-5 h-5 text-gray-600" /></button>
+                            <button className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><ShareIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" /></button>
                         </div>
-                        <h1 className="text-lg font-medium text-gray-700 mb-4">{product.name}</h1>
+                        <h1 className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-4">{product.name}</h1>
                         <div className="mb-6">
-                            <h3 className="text-md font-bold text-gray-800 mb-2">{product.gallery.length} Colors Available</h3>
+                            <h3 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2">{product.gallery.length} Colors Available</h3>
                             <div className="flex gap-2">
                                 {product.gallery.map(colorOption => (
                                     <button key={colorOption.color} onClick={() => handleColorSelect(colorOption)}>
-                                        <img src={colorOption.images[0]} alt={colorOption.color} className={`w-26 h-30 object-cover rounded-md border-2 transition ${selectedColor.color === colorOption.color ? 'border-gray-800' : 'border-gray-300 hover:border-gray-500'}`} />
+                                        <img src={colorOption.images[0]} alt={colorOption.color} className={`w-26 h-30 object-cover rounded-md border-2 transition ${selectedColor.color === colorOption.color ? 'border-gray-800 dark:border-gray-200' : 'border-gray-300 dark:border-gray-600 hover:border-gray-500 dark:hover:border-gray-400'}`} />
                                     </button>
                                 ))}
                             </div>
                         </div>
                         <div className="mb-6">
-                            <h3 className="text-md font-bold text-gray-800 mb-2">Size</h3>
+                            <h3 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2">Size</h3>
                             <div className="flex flex-wrap gap-2">
                                 {allPossibleSizes.map(size => {
                                     const isAvailable = selectedColor.sizes.some(s => s.name === size.name);
                                     return (
-                                        <button key={size.name} onClick={() => isAvailable && setSelectedSize(size.name)} disabled={!isAvailable} className={`px-4 py-2 rounded-md border text-sm font-medium transition relative ${isAvailable ? (selectedSize === size.name ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50') : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'}`}>
+                                        <button key={size.name} onClick={() => isAvailable && setSelectedSize(size.name)} disabled={!isAvailable} className={`px-4 py-2 rounded-md border text-sm font-medium transition relative ${isAvailable ? (selectedSize === size.name ? 'bg-gray-900 dark:bg-white text-white dark:text-black border-gray-900 dark:border-white' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600') : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-700 cursor-not-allowed'}`}>
                                             {size.name}
                                             {!isAvailable && <div className="absolute inset-0 flex items-center justify-center"><div className="w-full h-px bg-gray-400 transform -rotate-12"></div></div>}
                                         </button>
@@ -137,18 +137,18 @@ const ProductDetailPage = () => {
                                 })}
                             </div>
                         </div>
-                          <h3 className="text-md font-bold text-gray-800 mb-2">Quantity</h3>
+                          <h3 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2">Quantity</h3>
                         <div className="flex items-center gap-4 mb-6">
 
-                            <div className="flex items-center border border-gray-300 rounded-md">
-                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 text-xl font-light text-gray-600 hover:bg-gray-100 rounded-l-md">-</button>
-                                <span className="px-5 py-2 text-md font-medium text-gray-800">{quantity}</span>
-                                <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 text-xl font-light text-gray-600 hover:bg-gray-100 rounded-r-md">+</button>
+                            <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md">
+                                <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="px-3 py-2 text-xl font-light text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-l-md">-</button>
+                                <span className="px-5 py-2 text-md font-medium text-gray-800 dark:text-gray-200">{quantity}</span>
+                                <button onClick={() => setQuantity(q => q + 1)} className="px-3 py-2 text-xl font-light text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-r-md">+</button>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <button onClick={handleAddToCartClick} className="flex-1 bg-black text-white font-semibold py-3 px-6 rounded-md hover:bg-gray-800 transition-colors duration-300">Add to bag</button>
-                            <button className="p-3 border border-gray-300 rounded-md hover:bg-gray-100"><HeartIcon className="w-6 h-6 text-gray-500" /></button>
+                            <button onClick={handleAddToCartClick} className="flex-1 bg-black dark:bg-white text-white dark:text-black font-semibold py-3 px-6 rounded-md hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors duration-300">Add to bag</button>
+                            <button className="p-3 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"><HeartIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" /></button>
                         </div>
                         <ProductInfo />
                     </div>

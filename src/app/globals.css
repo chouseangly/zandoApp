@@ -10,7 +10,7 @@
 
 .dark {
   --background: #0a0a0a;
-  --foreground: #ededed;
+  --foreground: #8a8383;
 }
 @theme inline {
   --color-background: var(--background);
