@@ -1,37 +1,10 @@
-// src/components/ui/DatePicker.jsx
-
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
-import { format, isValid, parseISO, addMonths, subMonths } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css'; // Default styles
 import { CalendarIcon } from 'lucide-react';
-
-const CustomCaption = ({ displayMonth, onPreviousClick, onNextClick }) => {
-    return (
-        <div className="flex justify-between items-center text-gray-700 font-medium mb-2">
-            <button
-                type="button"
-                onClick={() => onPreviousClick()}
-                className="p-1 rounded-full hover:bg-gray-100"
-            >
-                &lt;
-            </button>
-            <div className="text-sm font-bold">
-                {format(displayMonth, 'MMMM yyyy')}
-            </div>
-            <button
-                type="button"
-                onClick={() => onNextClick()}
-                className="p-1 rounded-full hover:bg-gray-100"
-            >
-                &gt;
-            </button>
-        </div>
-    );
-};
-
 
 const DatePicker = ({ selectedDate, onSelectDate, placeholder = "Select Date" }) => {
     const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -62,38 +35,35 @@ const DatePicker = ({ selectedDate, onSelectDate, placeholder = "Select Date" })
             <button
                 type="button"
                 onClick={() => setIsPickerOpen(!isPickerOpen)}
-                className="flex items-center gap-2 text-gray-600 text-sm font-medium border rounded-md px-3 py-1.5 hover:bg-gray-50 bg-white min-w-[120px] justify-between"
+                className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm font-medium border rounded-md px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 min-w-[120px] justify-between"
             >
                 <CalendarIcon size={16} />
                 <span>{formattedDate || placeholder}</span>
                 {selectedDate && (
                     <span 
                         onClick={(e) => { e.stopPropagation(); onSelectDate(null); setIsPickerOpen(false); }}
-                        className="ml-2 text-gray-400 hover:text-gray-700 cursor-pointer"
+                        className="ml-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
                     >
                         &times;
                     </span>
                 )}
             </button>
             {isPickerOpen && (
-                <div className="absolute z-10 bg-white border border-gray-200 rounded-lg shadow-lg mt-2 right-0 md:right-auto">
+                <div className="absolute z-10 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg mt-2 right-0 md:right-auto">
                     <DayPicker
                         mode="single"
                         selected={selectedDate}
                         onSelect={handleDayClick}
                         showOutsideDays
-                        // ✅ FIX: Use the 'components' prop for a custom caption component
-                        // This is the modern and correct way to customize the header.
                         components={{
                             Caption: ({ displayMonth }) => (
-                               <div className="flex justify-between items-center text-gray-700 font-medium mb-2">
+                               <div className="flex justify-between items-center text-gray-700 dark:text-gray-200 font-medium mb-2">
                                     <div className="text-sm font-bold">
                                         {format(displayMonth, 'MMMM yyyy')}
                                     </div>
                                 </div>
                             )
                         }}
-                        // Custom styles to match your design
                         styles={{
                             caption: { display: 'flex', justifyContent: 'center' },
                             head_row: { display: 'flex', justifyContent: 'center' },

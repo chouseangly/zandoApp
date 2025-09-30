@@ -1,4 +1,4 @@
-/* @import "tailwindcss";
+@import "tailwindcss";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -10,7 +10,7 @@
 
 .dark {
   --background: #0a0a0a;
-  --foreground: #8a8383;
+  --foreground: #ededed;
 }
 @theme inline {
   --color-background: var(--background);
@@ -34,30 +34,4 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-} */
-@import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body {
-  @apply bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300;
-}
-
-/* Add custom styles for react-day-picker in dark mode */
-.rdp {
-  --rdp-background-color: theme('colors.gray.800');
-  --rdp-cell-size: 40px;
-  --rdp-accent-color: theme('colors.blue.500');
-  --rdp-accent-color-dark: theme('colors.blue.500');
-  --rdp-background-color-dark: theme('colors.gray.800');
-  --rdp-color: theme('colors.gray.100');
-  --rdp-outline: 2px solid theme('colors.blue.500');
-  --rdp-outline-selected: 3px solid theme('colors.blue.500');
-  --rdp-border-radius: 6px;
-}
-
-html.dark .rdp {
-    --rdp-background-color: theme('colors.gray.800');
-    --rdp-color: theme('colors.gray.200');
 }
