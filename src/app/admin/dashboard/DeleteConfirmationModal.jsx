@@ -42,14 +42,14 @@ const DeleteConfirmationModal = ({ isOpen, onClose, product, onProductDeleted })
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md text-gray-800 dark:text-gray-200">
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">Confirm Deletion</h2>
                     <button onClick={onClose}><X size={24} /></button>
                 </div>
                 <p>Are you sure you want to delete the product "{product.name}"?</p>
                 <div className="flex justify-end mt-4">
-                    <button type="button" onClick={onClose} className="mr-2 px-4 py-2 bg-gray-300 rounded-md">Cancel</button>
+                    <button type="button" onClick={onClose} className="mr-2 px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-md">Cancel</button>
                     <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded-md">Delete</button>
                 </div>
             </div>
