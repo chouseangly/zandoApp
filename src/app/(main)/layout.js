@@ -4,13 +4,13 @@ import Footer from '@/components/landing/Footer'
 
 const MainLayout = ({children}) => {
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <AuthNavbar />
-      <main className="pt-[2px] md:pt-[7px] lg:pt-0 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300"> 
+      <main className="flex-grow pt-[2px] md:pt-[7px] lg:pt-0"> 
         {children}
       </main>
       <Footer />
-    </>
+    </div>
   )
 }
 

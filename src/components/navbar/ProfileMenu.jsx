@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useSession, signOut } from "next-auth/react";
 import { User, ChevronRight, FileText, Gift, LogOut, LayoutDashboard } from "lucide-react";
 import { useLanguage } from '@/context/LanguageContext';
-import { useTheme } from "next-themes"; // Correct import
+import { useTheme } from "next-themes";
 import { translations } from '@/lib/translations';
 import { fetchUserProfile } from '@/services/profile.service';
 import Image from 'next/image';
@@ -12,11 +12,10 @@ import Image from 'next/image';
 const ProfileMenu = ({ onClose }) => {
   const { data: session } = useSession();
   const { language, setLanguage } = useLanguage();
-  const { theme, setTheme } = useTheme(); // Use the hook from next-themes
+  const { theme, setTheme } = useTheme();
   const t = translations[language];
   const [profile, setProfile] = useState(null);
 
-  // Define the toggle function
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
   };
@@ -99,8 +98,8 @@ const ProfileMenu = ({ onClose }) => {
            <h4 className="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 mb-2">{t.settings}</h4>
             <div className="flex items-center justify-between p-1">
                 <span className="text-sm text-gray-700 dark:text-gray-300">{t.darkMode}</span>
-                <button onClick={toggleTheme} className={`w-12 h-6 rounded-full p-1 flex items-center transition-colors ${theme === 'dark' ? 'bg-green-500 justify-end' : 'bg-gray-300 justify-start'}`}>
-                  <span className="w-4 h-4 bg-white rounded-full shadow-md transform transition-transform"></span>
+                <button onClick={toggleTheme} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${theme === 'dark' ? 'bg-green-500' : 'bg-gray-300'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${theme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`} />
                 </button>
             </div>
         </div>
