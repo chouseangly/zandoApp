@@ -112,22 +112,22 @@ const TransactionClient = () => {
     }, [currentStatusFilter, currentSearchQuery, currentDateFrom, currentDateTo]);
 
     return (
-        <div className="px-4 py-8 bg-gray-50 min-h-screen">
+        <div className="px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
             <div className="max-w-7xl mx-auto">
                 <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-                    <h1 className="text-2xl font-bold text-gray-800">Transaction</h1>
-                    <div className="flex items-center text-sm breadcrumbs text-gray-600">
+                    <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Transaction</h1>
+                    <div className="flex items-center text-sm breadcrumbs text-gray-600 dark:text-gray-400">
                         <ul>
                             <li>Dashboard</li>
                             <li>Transaction</li>
                         </ul>
                     </div>
-                    <button className="bg-white text-gray-800 px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-300 hover:bg-gray-100 transition-colors">
+                    <button className="bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-4 py-2 rounded-lg flex items-center gap-2 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                         <Upload size={18} /> Export All Transaction
                     </button>
                 </div>
 
-                <div className="bg-white p-6 rounded-xl shadow-md mb-8">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md mb-8">
                     <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
                         <form onSubmit={handleSearchSubmit} className="relative flex-grow max-w-sm">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -136,7 +136,7 @@ const TransactionClient = () => {
                                 placeholder="Search orders..."
                                 value={searchInputValue}
                                 onChange={(e) => setSearchInputValue(e.target.value)}
-                                className="w-full bg-gray-100 py-2 pl-10 pr-4 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full bg-gray-100 dark:bg-gray-700 py-2 pl-10 pr-4 rounded-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                         </form>
                         <div className="flex items-center gap-4 flex-wrap">
@@ -145,7 +145,7 @@ const TransactionClient = () => {
                                 onSelectDate={handleDateSelect}
                                 placeholder="Select Date"
                             />
-                            <button className="flex items-center gap-2 text-gray-600 text-sm font-medium border rounded-md px-3 py-1.5 hover:bg-gray-50">
+                            <button className="flex items-center gap-2 text-gray-600 dark:text-gray-300 text-sm font-medium border rounded-md px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-700">
                                 <Filter size={16} /> Filters <ChevronDown size={16} />
                             </button>
                         </div>
@@ -158,8 +158,8 @@ const TransactionClient = () => {
                                 onClick={() => handleStatusFilter(status)}
                                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                                     currentStatusFilter === status
-                                        ? 'bg-black text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        ? 'bg-black dark:bg-white text-white dark:text-black'
+                                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                                 }`}
                             >
                                 {status} ({statusCounts[status] || 0})
@@ -171,11 +171,11 @@ const TransactionClient = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
                         Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 animate-pulse h-60">
-                                <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                                <div className="h-10 bg-gray-200 rounded mb-4"></div>
-                                <div className="h-4 bg-gray-200 rounded w-1/2 mb-2"></div>
-                                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                            <div key={i} className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 animate-pulse h-60">
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
+                                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
                             </div>
                         ))
                     ) : transactions.length > 0 ? (
@@ -187,7 +187,7 @@ const TransactionClient = () => {
                             />
                         ))
                     ) : (
-                        <div className="col-span-full text-center py-10 text-gray-600">No transactions found for the current filters.</div>
+                        <div className="col-span-full text-center py-10 text-gray-600 dark:text-gray-400">No transactions found for the current filters.</div>
                     )}
                 </div>
             </div>

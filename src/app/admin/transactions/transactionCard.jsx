@@ -5,13 +5,13 @@ const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancell
 
 const getStatusColor = (status) => {
     switch (status) {
-        case 'Delivered': return "bg-blue-100 text-blue-800";
-        case 'Processing': return "bg-yellow-100 text-yellow-800";
-        case 'Shipped': return "bg-purple-100 text-purple-800";
-        case 'Cancelled': return "bg-red-100 text-red-800";
-        case 'Pending': return "bg-orange-100 text-orange-800";
-        case 'Picked Up': return "bg-green-100 text-green-800";
-        default: return "bg-gray-100 text-gray-800";
+        case 'Delivered': return "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300";
+        case 'Processing': return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300";
+        case 'Shipped': return "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
+        case 'Cancelled': return "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300";
+        case 'Pending': return "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300";
+        case 'Picked Up': return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300";
+        default: return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
     }
 };
 
@@ -20,12 +20,12 @@ const TransactionCard = ({ transaction, onStatusChange }) => {
     const statusColorClasses = getStatusColor(transaction.status);
 
     return (
-        <div className="bg-white p-5 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between">
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col justify-between">
             <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2">
-                    <input type="checkbox" className="form-checkbox text-blue-600 rounded" />
-                    <span className="font-semibold text-gray-700">#{transaction.id}</span>
-                    <span className="text-sm text-gray-500">{transaction.orderType}</span>
+                    <input type="checkbox" className="form-checkbox text-blue-600 rounded bg-gray-200 dark:bg-gray-600 border-gray-300 dark:border-gray-500" />
+                    <span className="font-semibold text-gray-700 dark:text-gray-200">#{transaction.id}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{transaction.orderType}</span>
                 </div>
                 <div className="relative">
                     <select
@@ -50,21 +50,21 @@ const TransactionCard = ({ transaction, onStatusChange }) => {
                     className="w-12 h-12 object-cover rounded-md" 
                 />
                 <div>
-                    <h3 className="text-md font-semibold text-gray-800">{transaction.productName}</h3>
+                    <h3 className="text-md font-semibold text-gray-800 dark:text-gray-100">{transaction.productName}</h3>
                     {transaction.additionalProducts > 0 && (
-                        <p className="text-sm text-gray-500">+{transaction.additionalProducts} Other Product</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">+{transaction.additionalProducts} Other Product</p>
                     )}
                 </div>
-                <div className="ml-auto text-lg font-bold text-gray-900">${transaction.price?.toFixed(2)}</div>
+                <div className="ml-auto text-lg font-bold text-gray-900 dark:text-white">${transaction.price?.toFixed(2)}</div>
             </div>
 
-            <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-600 border-t pt-3 border-gray-100">
+            <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-600 dark:text-gray-400 border-t pt-3 border-gray-100 dark:border-gray-700">
                 <div>Order Date</div>
-                <div className="text-right font-medium text-gray-700">{orderDate}</div>
+                <div className="text-right font-medium text-gray-700 dark:text-gray-200">{orderDate}</div>
                 <div>Customer</div>
-                <div className="text-right font-medium text-gray-700">{transaction.customerName}</div>
+                <div className="text-right font-medium text-gray-700 dark:text-gray-200">{transaction.customerName}</div>
                 <div>Payment</div>
-                <div className="text-right font-medium text-gray-700">{transaction.paymentMethod}</div>
+                <div className="text-right font-medium text-gray-700 dark:text-gray-200">{transaction.paymentMethod}</div>
             </div>
         </div>
     );

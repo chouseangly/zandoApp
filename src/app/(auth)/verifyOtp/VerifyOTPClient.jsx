@@ -119,9 +119,9 @@ export default function VerifyOTPClient() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
         <Toaster position="bottom-right" />
-      <div className="w-full max-w-4xl bg-white shadow-xl rounded-lg flex overflow-hidden">
+      <div className="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-xl rounded-lg flex overflow-hidden">
         
         <div className="hidden lg:block w-1/2 relative">
           <Image 
@@ -134,13 +134,13 @@ export default function VerifyOTPClient() {
 
         <div className="w-full lg:w-1/2 p-8 md:p-12 flex flex-col justify-center text-center">
             <div className="mx-auto mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-black"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-black dark:text-white"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
 
-          <h2 className="text-2xl font-bold text-gray-800">OTP Verification</h2>
-          <p className="text-gray-600 text-sm mt-2 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">OTP Verification</h2>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mt-2 mb-6">
             Enter the 6-digit code sent to <br />
-            <span className="font-semibold text-black break-words">{email || "your email"}</span>
+            <span className="font-semibold text-black dark:text-white break-words">{email || "your email"}</span>
           </p>
 
           <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
@@ -154,29 +154,29 @@ export default function VerifyOTPClient() {
                 value={digit}
                 onChange={(e) => handleChange(e.target.value, idx)}
                 onKeyDown={(e) => handleKeyDown(e, idx)}
-                className="w-12 h-14 sm:w-14 sm:h-16 border-b-2 text-center text-2xl font-semibold outline-none focus:border-black transition"
+                className="w-12 h-14 sm:w-14 sm:h-16 border-b-2 text-center text-2xl font-semibold outline-none focus:border-black dark:focus:border-white transition bg-transparent text-gray-800 dark:text-gray-100 border-gray-300 dark:border-gray-600"
               />
             ))}
           </div>
 
-          <p className="text-sm font-medium mt-4">
+          <p className="text-sm font-medium mt-4 dark:text-gray-400">
             {timer > 0 ? `Resend code in 00:${String(timer).padStart(2, "0")}` : "OTP Expired"}
           </p>
 
           <button
             onClick={handleVerify}
             disabled={loading}
-            className="w-full mt-6 py-3 bg-black text-white rounded-md font-semibold hover:bg-gray-800 transition disabled:bg-gray-400"
+            className="w-full mt-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-md font-semibold hover:bg-gray-800 dark:hover:bg-gray-200 transition disabled:bg-gray-400"
           >
             {loading ? "Verifying..." : "Verify Account"}
           </button>
 
-          <p className="text-sm text-gray-600 mt-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
             Didn’t receive the code?{" "}
             <button
               onClick={handleResend}
               disabled={timer > 0 || isResending}
-              className="font-semibold text-black hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
+              className="font-semibold text-black dark:text-white hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isResending ? "Resending..." : "Resend"}
             </button>

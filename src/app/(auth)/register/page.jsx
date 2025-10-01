@@ -77,16 +77,16 @@ export default function RegisterPage() {
   }, [status, router]);
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-4xl bg-white shadow-xl rounded-lg flex overflow-hidden">
+    <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="w-full max-w-4xl bg-white dark:bg-gray-800 shadow-xl rounded-lg flex overflow-hidden">
         <div className="w-full lg:w-1/2 p-8 md:p-12">
             <div className="flex justify-center mb-6">
                 <Link href="/">
                     <Image src="/logo.png" alt="Zando Logo" width={150} height={50} />
                 </Link>
             </div>
-          <h2 className="text-2xl font-bold text-center text-gray-800 mb-2">Create an Account</h2>
-          <p className="text-center text-gray-500 mb-8">Join the Zando community today!</p>
+          <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-gray-200 mb-2">Create an Account</h2>
+          <p className="text-center text-gray-500 dark:text-gray-400 mb-8">Join the Zando community today!</p>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -124,23 +124,23 @@ export default function RegisterPage() {
           </form>
 
           <div className="flex items-center my-6">
-            <hr className="w-full border-gray-300" />
-            <span className="text-gray-400 text-sm px-4">OR</span>
-            <hr className="w-full border-gray-300" />
+            <hr className="w-full border-gray-300 dark:border-gray-600" />
+            <span className="text-gray-400 dark:text-gray-500 text-sm px-4">OR</span>
+            <hr className="w-full border-gray-300 dark:border-gray-600" />
           </div>
 
           <button
             type="button"
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 border border-gray-300 p-3 rounded-md hover:bg-gray-50 transition"
+            className="w-full flex items-center justify-center gap-3 border border-gray-300 dark:border-gray-600 p-3 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
             <img src="/google-20.png" alt="Google" className="w-5 h-5" />
-            <span className="text-sm font-medium text-gray-700">Continue with Google</span>
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Continue with Google</span>
           </button>
 
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{" "}
-            <Link href="/login" className="text-black font-semibold hover:underline">
+            <Link href="/login" className="text-black dark:text-white font-semibold hover:underline">
               Log in
             </Link>
           </p>
