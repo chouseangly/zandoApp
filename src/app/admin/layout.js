@@ -9,6 +9,7 @@ import {
   Search, Bell, ChevronDown, FileText
 } from 'lucide-react';
 import { fetchCategories } from '@/services/category.service';
+import "@/app/globals.css";
 
 const SubCategory = ({ category, selectedCategory, level }) => (
     <div style={{ marginLeft: `${level * 10}px` }}>
