@@ -2,7 +2,7 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import SessionWrapper from "@/components/SessionWrapper";
 import { LanguageProvider } from "@/context/LanguageContext";
-import { ThemeProvider } from "@/context/ThemeContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { CartProvider } from "@/context/CartContext";
 import { Toaster } from 'react-hot-toast';
 
@@ -24,7 +24,11 @@ export default function RootLayout({ children }) {
         className={`${poppins.variable} antialiased bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-300`}
       >
         <SessionWrapper>
-          <ThemeProvider>
+          <ThemeProvider 
+           attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange>
             <LanguageProvider>
               <CartProvider>
                 {children}

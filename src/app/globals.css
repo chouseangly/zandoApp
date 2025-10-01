@@ -4,7 +4,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ensure the root elements fill the viewport */
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Set base background colors on the root html element */
+html {
+    background-color: white;
+}
+
+html.dark {
+    /* Corresponds to Tailwind's gray-900 */
+    background-color: #111827; 
+}
+
 body {
+  /* Apply typography and other body-specific styles */
   @apply bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-200 transition-colors duration-300;
   font-family: Arial, Helvetica, sans-serif;
 }

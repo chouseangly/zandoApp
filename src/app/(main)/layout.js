@@ -6,7 +6,7 @@ const MainLayout = ({children}) => {
   return (
     <div className="flex flex-col min-h-screen">
       <AuthNavbar />
-      <main className="flex-grow pt-[2px] md:pt-[7px] lg:pt-0"> 
+      <main className="flex-grow pt-[2px] md:pt-[7px] lg:pt-0 bg-white dark:bg-gray-900"> 
         {children}
       </main>
       <Footer />
